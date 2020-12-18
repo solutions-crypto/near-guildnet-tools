@@ -2,7 +2,7 @@
 
 This script will create a contained environment where we can build our binary files and then with the clean_up.sh script we destroy the environment when finished with it. We could do many different things depending on our environment. For example you could modify the script to export the container to a file located on a network drive so it could be used again the next time we need to compile. 
 
-If you are already using LXD this script will reset your init settings. If this may cause problems you should comment out or delete the [lxd init section](https://github.com/near-guildnet/nearcore/blob/05d18df7f4073b47b83397b09fd8425fb105b1cb/neard/src/config.rs#L63) that runs lxd init... ( lines 61-99 )
+If you are already using LXD this script will reset your init settings. If this may cause problems you should comment out or delete the [lxd init section](https://github.com/solutions-crypto/nearcore-autocompile/blob/main/install.sh#L61) that runs lxd init... ( lines 61-99 )
 
 This keeps our host machine clean of any extra packages that could introduce security issues or unexpected behaviour. It also allows for easy clean up.
 
@@ -31,18 +31,18 @@ The script has 2 parts the compiler and the installer. This will automate the co
 - You can remove everything and start over using the clean_up.sh script --- can be useful if you run into problems.
 - When answering question use y for Yes and anything else is no
 - The script will detect your operating system and build using the same ubuntu release. 
-- If you wish to build for a different ubuntu release change line 9 of [install.sh](https://github.com/solutions-crypto/nearcore-autocompile/install.sh) acceptable inputs are 18.04 or focal
+- If you wish to build for a different ubuntu release change line 9 of [install.sh](https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile//install.sh) acceptable inputs are 18.04 or focal
 
 ##### To Install
 ```
-wget https://raw.githubusercontent.com/crypto-guys/near-guildnet/main/nearcore/install/install.sh
+wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/install.sh
 chmod +x install.sh
 sudo ./install.sh
 ```
 
 ##### To remove
 ```
-wget https://raw.githubusercontent.com/crypto-guys/near-guildnet/main/nearcore/install/clean_up.sh
+wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/clean_up.sh
 chmod +x clean_up.sh
 sudo ./clean_up.sh
 ```
@@ -78,7 +78,7 @@ The install script has an option to enter the validator name so the validator ke
 
 **By default all logging information is sent to the system journal. For more information see journalctl --help**
 
-If you prefer logs to go to a file uncomment the noted line in the [neard.service](https://github.com/solutions-crypto/nearcore-autocompile/neard.service) unit file.
+If you prefer logs to go to a file uncomment the noted line in the [neard.service](https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/neard.service) unit file.
 
 
 - View logs
@@ -97,16 +97,16 @@ If you prefer logs to go to a file uncomment the noted line in the [neard.servic
 
 #### Troubleshooting
 
-- If the script fails. First verify if you have the tar file with binaries inside.
+- If the script fails verify you have the tar file in the correct place
 ```
 ls /tmp/near/nearcore.tar
 ```
 
-If you have tar file the compile step produces you can skip the compile process. 
+If you have /tmp/near/nearcore.tar you can skip the compile process. 
 
 - To start over use the clean_up.sh script
 ```
-wget https://raw.githubusercontent.com/crypto-guys/near-guildnet/main/nearcore/install/ckean_up.sh
+wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile//clean_up.sh
 chmod +x clean_up.sh
 sudo ./clean_up.sh
 ```
