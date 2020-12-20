@@ -171,7 +171,7 @@ function create_user_and_group
     fi
 
     # Adding an unprivileged user for the neard service
-    if grep -q neard etc/group
+    if grep -q neard /etc/passwd
     then
          echo "account 'neard' exists"
     else
@@ -182,15 +182,15 @@ function create_user_and_group
 # Creating a system service that will run with the non privilaged service account neard-guildnet
 function create_neard_service
 {
-    # Copy Guildnet Files to a suitable location
+    # Copy the systemd unit file to a suitable location and create a link /etc/systemd/system/neard.service
     mkdir -p /home/neard/service && cd /home/neard/service
     wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/moving/neard.service 
     rm -rf /etc/systemd/system/neard.service && sudo ln -s /home/neard/service/neard.service /etc/systemd/system/neard.service
     
-    # Extract binaries from tar
+    # Extract neard from /tmp/near/nearcore.tar to /usr/local/bin/neard
     cd /tmp/near
     tar -xf nearcore.tar
-    sudo cp -p /tmp/near/binaries/* /usr/local/bin
+    cp -p /tmp/near/binaries/neard /usr/local/bin
 
     # Initialize neard with correct settings
     echo '* Getting the correct files and fixing permissions'
@@ -200,7 +200,7 @@ function create_neard_service
     rm /home/neard/.near/guildnet/config.json && rm /home/neard/.near/guildnet/genesis.json
     wget https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/genesis.json
     wget https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/config.json
-    sudo chown -R neard:near -R /home/neard/
+    chown -R neard:near -R /home/neard/
 
     # Configure Logging
     echo '* Adding logfile conf for neard'
@@ -210,13 +210,6 @@ function create_neard_service
     # Clean Up
     echo '* Deleting temp files'
     rm -rf /tmp/near/binaries/
-    
-    # Messages
-    echo '* The NEARD service is installed and ready to be enabled and started'
-    echo '* Use "sudo systemctl enable neard.service" to enable the service to run on boot'
-    echo '* Use "sudo systemctl start neard" to start the service'
-    echo '* Once enabled and workng the service will start upon every system boot'
-    echo '* The data files for the neard service are located here -->  /home/neard/.near/guildnet '
     verify_install
 }
 
@@ -264,4 +257,10 @@ if [ "$NEARD_INSTALL" == "y" ]
 then
 create_user_and_group
 create_neard_service
+# Messages
+echo '* The NEARD service is installed and ready to be enabled and started'
+echo '* Use "sudo systemctl enable neard.service" to enable the service to run on boot'
+echo '* Use "sudo systemctl start neard" to start the service'
+echo '* Once enabled and workng the service will start upon every system boot'
+echo '* The neard service home directory -->  /home/neard/.near/guildnet '
 fi
