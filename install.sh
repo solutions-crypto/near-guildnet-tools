@@ -246,6 +246,16 @@ function verify_install
 
     echo '* Verification of the installation is complete. success!!!'
 }
+
+function create_validator_container
+{
+    check_container=$(lxc list $VALIDATOR_ID)
+    if [ -z "check_container" ]
+    then
+    lxc launch images:ubuntu/$BUILD/cloud/amd64 $VALIDATOR_ID
+    lxc exec $VALIDATOR_ID --sh -c "mkdir /tmp/near"
+    lxc file push /tmp/near/nearcore.tar $VALIDATOR_ID/tmp/near/nearcore.tar
+}
 #######################################################################################################
 
 
