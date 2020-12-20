@@ -180,10 +180,9 @@ function create_user_and_group
 function create_neard_service
 {
     # Copy Guildnet Files to a suitable location
-    mkdir -p /home/neard/service
-    cd /home/neard/service
+    mkdir -p /home/neard/service && cd /home/neard/service
     wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/moving/neard.service 
-    sudo rm -rf /etc/systemd/system/neard.service && sudo ln -s /home/neard/service/neard.service /etc/systemd/system/neard.service
+    rm -rf /etc/systemd/system/neard.service && sudo ln -s /home/neard/service/neard.service /etc/systemd/system/neard.service
     
     # Extract binaries from tar
     cd /tmp/near
@@ -192,14 +191,16 @@ function create_neard_service
 
     # Initialize neard with correct settings
     echo '* Getting the correct files and fixing permissions'
-    sudo mkdir -p /home/neard/.near/guildnet
-    sudo neard --home /home/neard/.near/guildnet init --download-genesis --chain-id guildnet --account-id "$VALIDATOR_ID"
+    mkdir -p /home/neard/.near/guildnet && cd /home/neard/.near/guildnet
+    neard --home /home/neard/.near/guildnet init --download-genesis --chain-id guildnet --account-id "$VALIDATOR_ID"
+    wget https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/genesis.json
+    wget https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/config.json
     sudo chown -R neard-guildnet:near -R /home/neard/.near
 
     # Configure Logging
     echo '* Adding logfile conf for neard'
-    sudo mkdir -p /usr/lib/systemd/journald.conf.d
-    sudo wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/moving/neard.conf --output-file /usr/lib/systemd/journald.conf.d/neard.conf
+    mkdir -p /usr/lib/systemd/journald.conf.d && cd /usr/lib/systemd/journald.conf.d
+    wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/moving/neard.conf --output-file /usr/lib/systemd/journald.conf.d/neard.conf
     
     # Clean Up
     echo '* Deleting temp files'
