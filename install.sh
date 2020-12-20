@@ -255,6 +255,9 @@ function create_validator_container
     lxc launch images:ubuntu/$BUILD/cloud/amd64 $VALIDATOR_ID
     lxc exec $VALIDATOR_ID --sh -c "mkdir /tmp/near"
     lxc file push /tmp/near/nearcore.tar $VALIDATOR_ID/tmp/near/nearcore.tar
+    lxc exec $VALIDATOR_ID apt install wget
+    lxc file push install.sh $VALIDATOR_ID/tmp/near/install.sh
+    lxc exec $VALIDATOR_ID /tmp/near/install.sh
 }
 #######################################################################################################
 
