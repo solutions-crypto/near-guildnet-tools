@@ -53,11 +53,14 @@ function update_via_apt
 {
     echo "* Updating via APT and installing required packages"
     apt-get -qq update && apt-get -qq upgrade
-    apt-get -qq install snapd squashfs-tools 
-    sleep 5
+    snap=$(apt list snapd | grep installed)
+    if [ -z "$snap" ]
+    then
+    apt install -y -q snapd squashfs-tools
+    fi
+    sleep 2
     echo '* Install lxd using snap'
     snap install lxd
-
 }
 
 # Initializes the container software with preseed information.
