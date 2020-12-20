@@ -2,11 +2,7 @@
 # SCRIPT CONFIG
 # This script was created by # Rickrods @ crypto-solutions.net for the NEAR Guildnet Network
 # 
-
 set -eu
-
-# Get Ubuntu Version so we build the right one
-RELEASE=$(lsb_release -c -s)
 
 # Change this to use a different repo
 NEAR_REPO="https://github.com/near-guildnet/nearcore.git"
@@ -14,7 +10,7 @@ vm_name="compiler"
 
 ##############
 # User Section
-# NOTE: You are not required to run the compile process it is options.
+# NOTE: You are not required to run the compile process it is optional
 # but the file /tmp/near/nearcore.tar is required for the install portion of the script
 # The tar file contains 1 folder named binaries with all binaries inside of it
 #######################################################################################################
@@ -34,9 +30,12 @@ read -r NEARD_INSTALL
 
 if [ "$NEAR_COMPILE" == y ]
 then
-echo "***  Please enter the nearcore version to compile... example - 1.17.0-rc.2 ***"
+echo "***  Please enter the nearcore version to compile... example - 1.17.0-rc.2 "
 read -r NEAR_VERSION
-
+echo "***  Please choose the Ubuntu Release you will be using ***"
+echo " 1 = Bionic"
+echo " 2 = Focal"
+read -r RELEASE
 fi
 
 if [ "$NEARD_INSTALL" == y ]
@@ -49,12 +48,12 @@ fi
 # This section has all funcitons the script will use they are ignored unless called upon
 #######################################################################################################
 
-# Update and install required packages
+# Update and install snapd
 function update_via_apt
 {
     echo "* Updating via APT and installing required packages"
     apt-get -qq update && apt-get -qq upgrade
-    apt-get -qq install snapd squashfs-tools git curl python3
+    apt-get -qq install snapd squashfs-tools 
     sleep 5
     echo '* Install lxd using snap'
     snap install lxd
@@ -103,14 +102,13 @@ sleep 15
 
 function launch_container
 {
-    echo "* Detected Ubuntu $RELEASE"
     echo "* Launching Ubuntu $RELEASE LXC container to build in"
 
-    if [ "$RELEASE" == "focal" ]
+    if [ "$RELEASE" = "2" ]
     then
     lxc launch images:ubuntu/focal/cloud/amd64 ${vm_name}
     fi
-    if [ "$RELEASE" == "bionic" ]
+    if [ "$RELEASE" == "1" ]
     then
     lxc launch images:ubuntu/18.04/cloud/amd64 ${vm_name}
     fi
@@ -119,7 +117,7 @@ function launch_container
     sleep 15
     echo "* Install Required Packages to the container via APT"
     sudo lxc exec ${vm_name} -- sh -c "apt-get -q -y autoremove && apt-get -q -y autoclean && apt-get -q -y update && apt-get -q -y upgrade"
-    sudo lxc exec ${vm_name} -- sh -c "apt-get -y install git curl snapd squashfs-tools libclang-dev build-essential g++ make cmake clang libssl-dev"
+    sudo lxc exec ${vm_name} -- sh -c "apt-get -q -y install git curl snapd squashfs-tools libclang-dev build-essential g++ make cmake clang libssl-dev llvm"
     sudo lxc exec ${vm_name} -- sh -c "snap install rustup --classic && rustup default nightly"
 }
 
@@ -131,12 +129,9 @@ function compile_source
     sudo lxc exec ${vm_name} -- sh -c "cd /tmp/src/nearcore && git checkout $NEAR_VERSION"
     echo "* Attempting to compile"
     sudo lxc exec ${vm_name} -- sh -c "cd /tmp/src/nearcore && cargo build -p neard --release"
-    sudo lxc exec ${vm_name} -- sh -c "cd /tmp/src/nearcore && cargo build -p keypair-generator --release"
-    sudo lxc exec ${vm_name} -- sh -c "mkdir ~/binaries"
-    sudo lxc exec ${vm_name} -- sh -c "cd /tmp/src/nearcore/target/release/ && mv near nearcore"
-    sudo lxc exec ${vm_name} -- sh -c "cd /tmp/src/nearcore/target/release/ && cp /tmp/src/nearcore/target/release/neard ~/binaries/"
-    sudo lxc exec ${vm_name} -- sh -c "cd /tmp/src/nearcore/target/release/ && cp /tmp/src/nearcore/target/release/keypair-generator ~/binaries/"
-    sudo lxc exec ${vm_name} -- sh -c "cd /tmp && tar -cf nearcore.tar -C ~/ binaries/"
+    sudo lxc exec ${vm_name} -- sh -c "mkdir -p /tmp/near/binaries"
+    sudo lxc exec ${vm_name} -- sh -c "cp /tmp/src/nearcore/target/release/neard /tmp/near/binaries/"
+    sudo lxc exec ${vm_name} -- sh -c "cd /tmp && tar -cf nearcore.tar -C /tmp/near/ binaries/"
 }
 
 # Create a tar file of the binaries and puts them in /tmp/near/nearcore.tar
