@@ -7,8 +7,7 @@ set -eu
 
 # Get Ubuntu Version so we build the right one
 RELEASE=$(lsb_release -c -s)
-# Change this to compile a different Version
-NEAR_VERSION="1.17.0-rc.2"
+
 # Change this to use a different repo
 NEAR_REPO="https://github.com/near-guildnet/nearcore.git"
 vm_name="compiler"
@@ -37,6 +36,7 @@ if [ "$NEAR_COMPILE" == y ]
 then
 echo "***  Please enter the nearcore version to compile... example - 1.17.0-rc.2 ***"
 read -r NEAR_VERSION
+
 fi
 
 if [ "$NEARD_INSTALL" == y ]
