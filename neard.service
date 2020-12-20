@@ -11,6 +11,7 @@ Group=near
 ExecStart=/usr/local/bin/neard --home /home/neard/.near/guildnet run
 Restart=on-failure
 RestartSec=120
+# Uncomment the next line to append to a logfile
 # StandardOutput=append:/var/log/guildnet.log
 
 [Install]
