@@ -88,7 +88,7 @@ profiles:
       type: nic
     root:
       path: /
-      pool: guildnet
+      pool: compiler-storage
       type: disk
   name: default
 cluster: null
