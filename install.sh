@@ -32,7 +32,7 @@ if [ "$NEAR_COMPILE" == y ]
 then
 echo "***  Please enter the nearcore version to compile... example - 1.17.0-rc.2 "
 read -r NEAR_VERSION
-echo "***  Please choose the Ubuntu Release you will be using ***"
+#echo "***  Please choose the Ubuntu Release you will be using ***"
 echo " 1 = Bionic"
 echo " 2 = Focal"
 echo " 3 = 21.04"
@@ -43,10 +43,10 @@ if [ "$NEARD_INSTALL" == y ]
 then
 echo "***  Please input your validator-id  ***"
 read -r VALIDATOR_ID
-echo "*** Please choose an install location  *** "
-echo "*** 0 = local on this machine"
-echo "*** 1 = in a lxc container"
-read -r LOCATION
+#echo "*** Please choose an install location  *** "
+#echo "*** 0 = local on this machine"
+#echo "*** 1 = in a lxc container"
+#read -r LOCATION
 fi
 
 #######################################################################################################
