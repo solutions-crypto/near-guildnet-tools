@@ -220,7 +220,7 @@ function verify_install
     echo '* Starting verification of the neard system service installation'
     installed_version=$(neard --version)
     echo '* Verify ---  Was the neard binary file installed correctly?'
-    neard_user_check=$(grep neard < /etc/passwd)
+    neard_user_check=$(cat /etc/passwd | grep neard)
     if [ -z "$installed_version" ]
     then
     echo '* The neard binary file is not active please check /usr/local/bin/ and look for errors above'
