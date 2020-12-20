@@ -217,28 +217,27 @@ function verify_install
 {
     echo '* Starting verification of the neard system service installation'
     installed_version=$(neard --version)
-    echo '* Verify ---  Was the neard binary file installed correctly?'
     neard_user_check=$(cat /etc/passwd | grep neard)
+
+    echo '* Verify ---  Was the neard binary file installed correctly?'
     if [ -z "$installed_version" ]
     then
-    echo '* The neard binary file is not active please check /usr/local/bin/ and look for errors above'
+    echo '* The neard binary file is not installed please check /usr/local/bin/ and look for errors above'
     return 1
-    fi
-    echo '* Verify --- Does the installed neard version match the intended version?'
-    if [ neard --version != "$NEAR_VERSION" ]
-    then
-    echo '* The installed neard binary version is not what we intended to build. Please check for any errors above'
-    return 1
-    fi
+    else
+    echo " Yes.    Version = $installed_version "
+    fi  
     echo '* Verify --- Does the neard user exist on the system?'
     if [ -z "$neard_user_check" ]
-    then
+    then  
     echo '* The neard user account (neard) has not been created something failed with the install script'
     return 1
+    else
+    echo " Yes... The account is $neard_user_check  "
     fi
 
     echo '* Verification of the installation is complete. success!!!'
-}    
+}
 #######################################################################################################
 
 
@@ -257,6 +256,8 @@ if [ "$NEARD_INSTALL" == "y" ]
 then
 create_user_and_group
 create_neard_service
+verify_install
+
 # Messages
 echo '* The NEARD service is installed and ready to be enabled and started'
 echo '* Use "sudo systemctl enable neard.service" to enable the service to run on boot'
