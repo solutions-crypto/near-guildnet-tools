@@ -166,14 +166,14 @@ function create_user_and_group
     echo '* Guildnet Install Script Starting'
     echo '* Setting up required accounts, groups, and privilages'
     # Adding group NEAR for any NEAR Services such as Near Exporter
-    near_group=$( cat /etc/group | grep near )
-    if [ -z "$near_group" ]
+    near_group=$(cat /etc/group | grep near)
+    if [ "$near_group" = "NULL" ]
     then
         groupadd near
     fi
     # Adding an unprivileged user for the neard service
-    neard_user=$( cat /etc/passwd | grep neard )
-    if [ -z "$neard_user" ]
+    neard_user=$(cat /etc/passwd | grep neard)
+    if [ "$neard_user" = "NULL" ]
     then
         adduser --system --home /home/neard --disabled-login --ingroup near neard || true
     fi
