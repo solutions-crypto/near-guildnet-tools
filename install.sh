@@ -42,6 +42,18 @@ echo "***  Please input your validator-id  ***"
 read -r VALIDATOR_ID
 fi
 
+
+// Borrrowed from https://github.com/near-guildnet/nearcore/blob/821b20cbdb52cf6129f57bd4e3747a90732d8d60/scripts/binary-release.sh
+function branch_to_net {
+    if [ "$1" == "$DEPLOY_VERSION" ]; then 
+        echo "guildnet"
+    elif [ "$1" == "beta" ]; then
+        echo "betanet"
+    elif [ "$1" == "stable" ]; then
+        echo "testnet"
+    fi
+}
+
 #######################################################################################################
 # This section has all funcitons the script will use they are ignored unless called upon
 #######################################################################################################
