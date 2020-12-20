@@ -109,7 +109,7 @@ function launch_container
     lxc launch images:ubuntu/focal/cloud/amd64 ${vm_name}
     fi
     if [ "$RELEASE" == "1" ]
-    then
+   then
     lxc launch images:ubuntu/18.04/cloud/amd64 ${vm_name}
     fi
 
@@ -160,16 +160,21 @@ function create_user_and_group
 {
     echo '* Guildnet Install Script Starting'
     echo '* Setting up required accounts, groups, and privilages'
+
     # Adding group NEAR for any NEAR Services such as Near Exporter
-    near_group=$(cat /etc/group | grep near)
-    if [ "$near_group" = "NULL" ]
+
+    if grep -q near /etc/group
     then
-        groupadd near
+         echo "group 'near' exists"
+    else
+         groupadd near
     fi
+
     # Adding an unprivileged user for the neard service
-    neard_user=$(cat /etc/passwd | grep neard)
-    if [ "$neard_user" = "NULL" ]
+    if grep -q neard etc/group
     then
+         echo "account 'neard' exists"
+    else
         adduser --system --home /home/neard --disabled-login --ingroup near neard || true
     fi
 }
@@ -195,7 +200,7 @@ function create_neard_service
     rm /home/neard/.near/guildnet/config.json && rm /home/neard/.near/guildnet/genesis.json
     wget https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/genesis.json
     wget https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/config.json
-    sudo chown -R neard-guildnet:near -R /home/neard/
+    sudo chown -R neard:near -R /home/neard/
 
     # Configure Logging
     echo '* Adding logfile conf for neard'
@@ -227,7 +232,7 @@ function verify_install
     return 1
     fi
     echo '* Verify --- Does the installed neard version match the intended version?'
-    if [ "$installed_version" != "$NEAR_VERSION" ]
+    if [ neard --version != "$NEAR_VERSION" ]
     then
     echo '* The installed neard binary version is not what we intended to build. Please check for any errors above'
     return 1
