@@ -43,6 +43,10 @@ if [ "$NEARD_INSTALL" == y ]
 then
 echo "***  Please input your validator-id  ***"
 read -r VALIDATOR_ID
+echo "*** Please choose an install location  *** "
+echo "*** 0 = local on this machine"
+echo "*** 1 = in a lxc container"
+read -r LOCATION
 fi
 
 #######################################################################################################
