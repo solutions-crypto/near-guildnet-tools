@@ -181,22 +181,31 @@ function create_neard_service
 {
     # Copy Guildnet Files to a suitable location
     mkdir -p /home/neard/service
-    wget https://raw.githubusercontent.com/crypto-guys/near-guildnet/main/nearcore/install/neard.service --output-file /home/neard/service/neard.service
+    cd /home/neard/service
+    wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/moving/neard.service 
     sudo rm -rf /etc/systemd/system/neard.service && sudo ln -s /home/neard/service/neard.service /etc/systemd/system/neard.service
+    
+    # Extract binaries from tar
     cd /tmp/near
     tar -xf nearcore.tar
     sudo cp -p /tmp/near/binaries/* /usr/local/
 
+    # Initialize neard with correct settings
     echo '* Getting the correct files and fixing permissions'
     sudo mkdir -p /home/neard/.near/guildnet
     sudo neard --home /home/neard/.near/guildnet init --download-genesis --chain-id guildnet --account-id "$VALIDATOR_ID"
     sudo chown -R neard-guildnet:near -R /home/neard/.near
 
+    # Configure Logging
     echo '* Adding logfile conf for neard'
     sudo mkdir -p /usr/lib/systemd/journald.conf.d
-    sudo wget https://raw.githubusercontent.com/crypto-guys/near-guildnet/main/nearcore/install/near.conf --output-file /usr/lib/systemd/journald.conf.d/neard.conf
+    sudo wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/moving/neard.conf --output-file /usr/lib/systemd/journald.conf.d/neard.conf
+    
+    # Clean Up
     echo '* Deleting temp files'
     rm -rf /tmp/near/binaries/
+    
+    # Messages
     echo '* The NEARD service is installed and ready to be enabled and started'
     echo '* Use "sudo systemctl enable neard.service" to enable the service to run on boot'
     echo '* Use "sudo systemctl start neard" to start the service'
