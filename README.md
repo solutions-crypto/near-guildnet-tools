@@ -16,7 +16,7 @@ Docker does the same thing as LXD / LXC just in a slightly different way. Our sc
 - Options for logging
 - Removes everything installed for the compile process if requested
 
-The script has 2 parts the compiler and the installer. This will automate the compile process and could easily simplify the install process. The compiler will run in a container and installs a large amount of softare over 1.5gb so please be sure to have pleny of space.   the script install.sh 
+The script has 2 parts the compiler and the installer. This will automate the compile process and could easily simplify the install process. The compiler will run in a container and installs a large amount of softare over 1.5gb so please be sure to have pleny of space.   
 
 ## Requirements
 
