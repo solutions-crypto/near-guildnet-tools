@@ -31,8 +31,7 @@ The script has 2 parts the compiler and the installer. This will automate the co
 - You can remove everything and start over using the clean_up.sh script --- can be useful if you run into problems.
 - When answering question use y for Yes and anything else is no
 - The script will detect your operating system and build using the same ubuntu release. 
-- The script has been tested on ubuntu 18 and 20. It has been tested on 21.04 only when used inside of a container so far. It is possible to compile on 21.04 then launch a container and use lxc file push to copy the tar file to /tmp/near and install script to /tmp/near then run the script to install the service inside the container. If you will be using containers regularly you might need some additional apparmor setup ["apparmor-profiles apparmor-profiles-extra"](https://wiki.debian.org/AppArmor/HowToUse#Enabling_profiles)
-
+- The script has been tested on ubuntu 18 and 20. It has been tested on 21.04 only when used inside of a container so far. It is possible to compile on 21.04 then launch a container and use lxc file push to copy the tar file to /tmp/near and install script to /tmp/near then run the script to install the service inside the container. 
 ##### To Install
 ```
 wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/install.sh
