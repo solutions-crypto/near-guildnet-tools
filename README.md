@@ -2,11 +2,11 @@
 
 This script will create a contained environment where we can build our binary files and then with the clean_up.sh script we destroy the environment when finished with it. We could do many different things depending on our environment. For example you could modify the script to export the container to a file located on a network drive so it could be used again the next time we need to compile. 
 
-If you are already using LXD this script will reset your init settings. If this may cause problems you should comment out or delete the [lxd init section](https://github.com/solutions-crypto/nearcore-autocompile/blob/main/install.sh#L61) that runs lxd init... ( lines 61-99 )
+If you are already using [LXD](https://linuxcontainers.org/) this script will reset your init settings. If this may cause problems you should comment out or delete the [lxd init section](https://github.com/solutions-crypto/nearcore-autocompile/blob/main/install.sh#L61) that runs lxd init... ( lines 61-99 )
 
 This keeps our host machine clean of any extra packages that could introduce security issues or unexpected behaviour. It also allows for easy clean up.
 
-Docker does the same thing as LXD / LXC just in a slightly different way. Our script will do the following 
+[Docker](https://www.docker.com) does the same thing as [LXD / LXC](https://linuxcontainers.org/) just in a slightly different way. Our script will do the following 
 
 - Compile any version input for guildnet 
 - Creates a lxc container to compile the binaries and exports a tar file with binaries back to the host
