@@ -35,6 +35,7 @@ read -r NEAR_VERSION
 echo "***  Please choose the Ubuntu Release you will be using ***"
 echo " 1 = Bionic"
 echo " 2 = Focal"
+echo " 3 = Hirsute"
 read -r RELEASE
 fi
 
@@ -106,7 +107,10 @@ sleep 15
 function launch_container
 {
     echo "* Launching Ubuntu $RELEASE LXC container to build in"
-
+    if [ "$RELEASE" = "3" ]
+    then
+    lxc launch images:ubuntu/21.04/cloud/amd64 ${vm_name}
+    fi
     if [ "$RELEASE" = "2" ]
     then
     lxc launch images:ubuntu/focal/cloud/amd64 ${vm_name}
