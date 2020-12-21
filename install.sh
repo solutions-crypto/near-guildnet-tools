@@ -56,7 +56,7 @@ function update_via_apt
     snap=$(apt list snapd | grep installed)
     if [ -z "$snap" ]
     then
-    apt install -y -q snapd squashfs-tools
+    apt install -y -q snapd squashfs-tools apparmor-profiles-extra apparmor-utils
     fi
     sleep 2
     echo '* Install lxd using snap'
