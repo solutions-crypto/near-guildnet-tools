@@ -106,7 +106,7 @@ If you have /tmp/near/nearcore.tar you can skip the compile process.
 
 - To start over use the clean_up.sh script
 ```
-wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile//clean_up.sh
+wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/clean_up.sh
 chmod +x clean_up.sh
 sudo ./clean_up.sh
 ```
