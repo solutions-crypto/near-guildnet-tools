@@ -31,7 +31,7 @@ The script has 2 parts the compiler and the installer. This will automate the co
 - You can remove everything and start over using the clean_up.sh script --- can be useful if you run into problems.
 - When answering question use y for Yes and anything else is no
 - The script will detect your operating system and build using the same ubuntu release. 
-- If you wish to build for a different ubuntu release change line 9 of [install.sh](https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile//install.sh) acceptable inputs are 18.04 or focal
+- The script has been tested on ubuntu 18 and 20. It has been tested on 21.04 only when used inside of a container so far. It is possible to compile on 21.04 then launch a container and use lxc file push to copy the tar file to /tmp/near and install script to /tmp/near then run the script to install the service inside the container. If you will be using containers regularly you might need some additional apparmor setup ["apparmor-profiles apparmor-profiles-extra"](https://wiki.debian.org/AppArmor/HowToUse#Enabling_profiles)
 
 ##### To Install
 ```
@@ -47,9 +47,10 @@ chmod +x clean_up.sh
 sudo ./clean_up.sh
 ```
 ##### To re-user a container 
-- ( the name of the existing container must be compiler )
+- The container should be named "compiler"
 - edit install.sh
-- There are 2 lines that contain "launch_container" comment out the one that contains only that phrase. This will prevent the script from trying to create a new container to use and the existing container named compiler will be used.
+- There are 2 lines that contain "launch_container" comment out the one that contains only that phrase. 
+- This will prevent the script from trying to create a new container to use and the existing container named compiler will be used.
 
 The install script has an option to enter the validator name so the validator key is generated correctly
 
