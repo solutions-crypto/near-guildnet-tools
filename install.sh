@@ -252,12 +252,23 @@ function create_validator_container
     check_container=$(lxc list $VALIDATOR_ID)
     if [ -z "check_container" ]
     then
-    lxc launch images:ubuntu/$BUILD/cloud/amd64 $VALIDATOR_ID
-    lxc exec $VALIDATOR_ID --sh -c "mkdir /tmp/near"
-    lxc file push /tmp/near/nearcore.tar $VALIDATOR_ID/tmp/near/nearcore.tar
-    lxc exec $VALIDATOR_ID apt install wget
-    lxc file push install.sh $VALIDATOR_ID/tmp/near/install.sh
-    lxc exec $VALIDATOR_ID /tmp/near/install.sh
+        lxc launch images:ubuntu/$BUILD/cloud/amd64 $VALIDATOR_ID
+        lxc exec $VALIDATOR_ID --sh -c "mkdir /tmp/near"
+        lxc file push /tmp/near/nearcore.tar $VALIDATOR_ID/tmp/near/nearcore.tar
+        lxc exec $VALIDATOR_ID apt install wget
+        lxc file push install.sh $VALIDATOR_ID/tmp/near/install.sh
+        echo "Launching the script inside a container named $VALIDATOR_ID answer n to compile then y to install"
+        lxc exec $VALIDATOR_ID /tmp/near/install.sh
+    else
+        echo "Contain with the name $VALIDATOR_ID exists already Please enter a new name"
+        read $CONTAINER_NAME
+        lxc exec $$CONTAINER_NAME --sh -c "mkdir /tmp/near"
+        lxc file push /tmp/near/nearcore.tar $VALIDATOR_ID/tmp/near/nearcore.tar
+        lxc exec $CONTAINER_NAME apt install wget
+        lxc file push install.sh $$CONTAINER_NAME/tmp/near/install.sh
+        echo "Launching the script inside a container named $VALIDATOR_ID answer n to compile then y to install"
+        lxc exec $CONTAINER_NAME /tmp/near/install.sh
+    fi
 }
 #######################################################################################################
 
