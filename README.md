@@ -2,7 +2,7 @@
 
 This script will create a contained environment where we can build our binary files and then with the clean_up.sh script we destroy the environment when finished with it. We could do many different things depending on our environment. For example you could modify the script to export the container to a file located on a network drive so it could be used again the next time we need to compile. 
 
-If you are already using [LXD](https://linuxcontainers.org/) this script will try to reset your init settings. The script will fail if your using LXD. You should comment out the line that executes lxd init [This one....](https://github.com/solutions-crypto/nearcore-autocompile/blob/73360d059f10d5dd239feba10d04cb2dd5a0cff5/install.sh#L155) 
+If you are already using [LXD](https://linuxcontainers.org/) this script will try to reset your init settings. The script will fail if your using LXD. You should comment out (put # in front of) the line that executes lxd init [This one....](https://github.com/solutions-crypto/nearcore-autocompile/blob/73360d059f10d5dd239feba10d04cb2dd5a0cff5/install.sh#L155) 
 
 This keeps our host machine clean of any extra packages that could introduce security issues or unexpected behaviour. It also allows for easy clean up.
 
