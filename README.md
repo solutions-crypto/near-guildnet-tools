@@ -8,7 +8,7 @@ This keeps our host machine clean of any extra packages that could introduce sec
 
 Docker does the same thing as LXD / LXC just in a slightly different way. Our script will do the following 
 
-- Compile nearcore-1.17.0-rc.2 for guildnet 
+- Compile any version input for guildnet 
 - Creates a lxc container to compile the binaries and exports a tar file with binaries back to the host
 - Sets up the host machine to run the binaries using systemd 
 - Creates a neard system service that runs with a non-privilaged system account
