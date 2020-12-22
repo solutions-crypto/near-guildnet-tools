@@ -32,11 +32,12 @@ if [ "$NEAR_COMPILE" == y ]
 then
 echo "***  Please enter the nearcore version to compile or just hit enter for the current version of 1.17.0-rc.2 "
 read -r NEAR_VER
+fi
 if [ -z "$NEAR_VER" ]
 then
-NEAR_VERSION=1.17.0-rc.2
+NEAR_VERSION="1.17.0-rc.2"
 else
-let NEAR_VERSION="$NEAR_VER"
+NEAR_VERSION="$NEAR_VER"
 fi
 echo "***  Please choose the Ubuntu Release you will be using ***"
 echo " 1 = Bionic (18.04)"
