@@ -36,7 +36,7 @@ if [ -z "$NEAR_VER" ]
 then
 NEAR_VERSION=1.17.0-rc.2
 else
-NEAR_VERSION=$NEAR_VER
+let NEAR_VERSION="$NEAR_VER"
 fi
 echo "***  Please choose the Ubuntu Release you will be using ***"
 echo " 1 = Bionic (18.04)"
