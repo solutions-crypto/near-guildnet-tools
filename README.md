@@ -34,14 +34,14 @@ The script has 2 parts the compiler and the installer. This will automate the co
 - The script has been tested on ubuntu 18 and 20. It has been tested on 21.04 only when used inside of a container so far. It is possible to compile on 21.04 then launch a container and use lxc file push to copy the tar file to /tmp/near and install script to /tmp/near then run the script to install the service inside the container. 
 ##### To Install
 ```
-wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/install.sh
+wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/main/install.sh
 chmod +x install.sh
 sudo ./install.sh
 ```
 
 ##### To remove
 ```
-wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/clean_up.sh
+wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/main/clean_up.sh
 chmod +x clean_up.sh
 sudo ./clean_up.sh
 ```
