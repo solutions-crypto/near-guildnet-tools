@@ -33,9 +33,9 @@ then
 echo "***  Please enter the nearcore version to compile... example - 1.17.0-rc.2 "
 read -r NEAR_VERSION
 echo "***  Please choose the Ubuntu Release you will be using ***"
-echo " 1 = Bionic"
-echo " 2 = Focal"
-echo " 3 = Hirsute"
+echo " 1 = Bionic (18.04)"
+echo " 2 = Focal (20.04)"
+echo " 3 = Hirsute (21.04)"
 read -r RELEASE
 fi
 
@@ -191,7 +191,7 @@ function create_neard_service
 {
     # Copy the systemd unit file to a suitable location and create a link /etc/systemd/system/neard.service
     mkdir -p /home/neard/service && cd /home/neard/service
-    wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/moving/neard.service 
+    wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/main/neard.service 
     rm -rf /etc/systemd/system/neard.service && sudo ln -s /home/neard/service/neard.service /etc/systemd/system/neard.service
     
     # Extract neard from /tmp/near/nearcore.tar to /usr/local/bin/neard
@@ -212,7 +212,7 @@ function create_neard_service
     # Configure Logging
     echo '* Adding logfile conf for neard'
     mkdir -p /usr/lib/systemd/journald.conf.d && cd /usr/lib/systemd/journald.conf.d
-    wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/moving/neard.conf
+    wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/main/neard.conf
     
     # Clean Up
     echo '* Deleting temp files'
