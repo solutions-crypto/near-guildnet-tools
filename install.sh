@@ -227,6 +227,7 @@ function create_neard_service
     
     # Clean Up
     echo '* Deleting temp files'
+    mkdir /home/neard/binaries && cp /tmp/near/binaries/* /home/neard/binaries/
     rm -rf /tmp/near/binaries/
     verify_install
 }
@@ -278,8 +279,16 @@ verify_install
 
 # Messages
 echo '* The NEARD service is installed and ready to be enabled and started'
+echo '  '
 echo '* Use "sudo systemctl enable neard.service" to enable the service to run on boot'
+echo '  '
 echo '* Use "sudo systemctl start neard" to start the service'
+echo '  '
 echo '* Once enabled and workng the service will start upon every system boot'
+echo '  '
+echo '* The compiled binary files are located in /tmp/near/nearcore.tar'
+echo '  '
+echo '* The neard binary file backup location is -->  /home/neard/binaries'
+echo '  '
 echo '* The neard service home directory -->  /home/neard/.near/guildnet '
 fi
