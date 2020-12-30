@@ -5,7 +5,7 @@
 set -eu
 
 # Change this to use a different repo
-GUILDNET_REPO="https://github.com/near-guildnet/nearcore.git"
+="https://github.com/near-guildnet/nearcore.git"
 MAINNET_REPO="https://github.com/near/nearcore.git"
 vm_name="compiler"
 
@@ -150,7 +150,7 @@ function compile_source
     then
     sudo lxc exec ${vm_name} -- sh -c "rm -rf /tmp/src && mkdir -p /tmp/src/ && git clone ${MAINNET_REPO} /tmp/src/nearcore"
     else
-    sudo lxc exec ${vm_name} -- sh -c "rm -rf /tmp/src && mkdir -p /tmp/src/ && git clone ${NEAR_REPO} /tmp/src/nearcore"
+    sudo lxc exec ${vm_name} -- sh -c "rm -rf /tmp/src && mkdir -p /tmp/src/ && git clone ${GUILDNET_REPO} /tmp/src/nearcore"
     fi
     echo "* Switching Version"
     sudo lxc exec ${vm_name} -- sh -c "cd /tmp/src/nearcore && git checkout $NEAR_VERSION"
