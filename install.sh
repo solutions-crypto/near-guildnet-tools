@@ -149,9 +149,12 @@ function compile_source
     if [ "$NETWORK" == "mainnet" ]
     then
     sudo lxc exec ${vm_name} -- sh -c "rm -rf /tmp/src && mkdir -p /tmp/src/ && git clone ${MAINNET_REPO} /tmp/src/nearcore"
-    else
+    fi
+    if [ "$NETWORK" == "guildnet" ]
+    then
     sudo lxc exec ${vm_name} -- sh -c "rm -rf /tmp/src && mkdir -p /tmp/src/ && git clone ${GUILDNET_REPO} /tmp/src/nearcore"
     fi
+    
     echo "* Switching Version"
     sudo lxc exec ${vm_name} -- sh -c "cd /tmp/src/nearcore && git checkout $NEAR_VERSION"
     echo "* Attempting to compile"
