@@ -5,7 +5,8 @@
 set -eu
 
 # Change this to use a different repo
-NEAR_REPO="https://github.com/near-guildnet/nearcore.git"
+="https://github.com/near-guildnet/nearcore.git"
+MAINNET_REPO="https://github.com/near/nearcore.git"
 vm_name="compiler"
 
 ##############
@@ -30,6 +31,9 @@ read -r NEARD_INSTALL
 
 if [ "$NEAR_COMPILE" == y ]
 then
+echo "***  Please enter the network we are compiling for mainnet or guildnet "
+read NETWORK
+
 echo "***  Please enter the nearcore version to compile or just hit enter for the current version of 1.17.0-rc.2 "
 read -r NEAR_VER
 fi
@@ -117,7 +121,7 @@ sleep 15
 
 function launch_container
 {
-    echo "* Launching Ubuntu $RELEASE LXC container to build in"
+    echo "* Launching Ubuntu LXC container to build in"
     if [ "$RELEASE" = "3" ]
     then
     lxc launch images:ubuntu/21.04/cloud/amd64 ${vm_name}
@@ -142,7 +146,15 @@ function launch_container
 function compile_source
 {
     echo "* Cloning the github source"
-    sudo lxc exec ${vm_name} -- sh -c "rm -rf /tmp/src && mkdir -p /tmp/src/ && git clone ${NEAR_REPO} /tmp/src/nearcore"
+    if [ "$NETWORK" == "mainnet" ]
+    then
+    sudo lxc exec ${vm_name} -- sh -c "rm -rf /tmp/src && mkdir -p /tmp/src/ && git clone ${MAINNET_REPO} /tmp/src/nearcore"
+    fi
+    if [ "$NETWORK" == "guildnet" ]
+    then
+    sudo lxc exec ${vm_name} -- sh -c "rm -rf /tmp/src && mkdir -p /tmp/src/ && git clone ${GUILDNET_REPO} /tmp/src/nearcore"
+    fi
+    
     echo "* Switching Version"
     sudo lxc exec ${vm_name} -- sh -c "cd /tmp/src/nearcore && git checkout $NEAR_VERSION"
     echo "* Attempting to compile"
