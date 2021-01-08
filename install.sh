@@ -76,13 +76,20 @@ function update_via_apt
     fi
     sleep 2
     echo '* Install lxd using snap'
+    LXD_I_STATUS=$(snap info lxd | grep installed)
+    if [ -z "$LXD_I_STATUS" ]
+    then
     snap install lxd
+    LXDINIT=1
+    fi
 }
 
 # Initializes the container software with preseed information.
 # NOTE: advanced init configs using "cloud-init" require cloud-tools and it is highly sugggested to use a cloud image
 function init_lxd
 {
+if [ "$LXDINIT" = "1" ]
+then
 echo "* Initializing LXD"
     cat <<EOF | lxd init --preseed
 config: {}
@@ -117,6 +124,7 @@ EOF
 
 systemctl restart snapd
 sleep 15
+fi
 }
 
 function launch_container
