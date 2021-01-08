@@ -5,7 +5,7 @@
 set -eu
 
 # Change this to use a different repo
-="https://github.com/near-guildnet/nearcore.git"
+GUILDNET_REPO="https://github.com/near-guildnet/nearcore.git"
 MAINNET_REPO="https://github.com/near/nearcore.git"
 vm_name="compiler"
 
