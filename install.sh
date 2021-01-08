@@ -184,7 +184,6 @@ function get_tarball
 function compile_nearcore
 {
     update_via_apt
-    init_lxd
     launch_container
     compile_source
     get_tarball
