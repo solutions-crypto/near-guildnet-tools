@@ -72,15 +72,15 @@ function update_via_apt
     snap=$(apt list snapd | grep installed)
     if [ -z "$snap" ]
     then
-    apt install -y -q snapd squashfs-tools apparmor-profiles-extra apparmor-utils
+    apt install -y -q snapd squashfs-tools apparmor-profiles-extra
     fi
     sleep 2
     echo '* Install lxd using snap'
-    LXD_I_STATUS=$(snap info lxd | grep installed)
-    if [ -z "$LXD_I_STATUS" ]
+    LXDINIT=$(snap info lxd | grep installed)
+    if [ -z "$LXDINIT" ]
     then
     snap install lxd
-    LXDINIT=1
+    init_lxd
     fi
 }
 
@@ -88,8 +88,6 @@ function update_via_apt
 # NOTE: advanced init configs using "cloud-init" require cloud-tools and it is highly sugggested to use a cloud image
 function init_lxd
 {
-if [ "$LXDINIT" = "1" ]
-then
 echo "* Initializing LXD"
     cat <<EOF | lxd init --preseed
 config: {}
@@ -123,8 +121,7 @@ cluster: null
 EOF
 
 systemctl restart snapd
-sleep 15
-fi
+sleep 15\
 }
 
 function launch_container
@@ -147,7 +144,7 @@ function launch_container
     sleep 15
     echo "* Install Required Packages to the container via APT"
     sudo lxc exec ${vm_name} -- sh -c "apt-get -q -y autoremove && apt-get -q -y autoclean && apt-get -q -y update && apt-get -q -y upgrade"
-    sudo lxc exec ${vm_name} -- sh -c "apt-get -q -y install git curl snapd squashfs-tools libclang-dev build-essential g++ make cmake clang libssl-dev llvm"
+    sudo lxc exec ${vm_name} -- sh -c "apt-get -q -y install debian-keyring autoconf automake libtool flex bison ninja-build apparmor-profiles-extra apparmor-utils git curl snapd squashfs-tools libclang-dev build-essential g++ make cmake clang libssl-dev llvm"
     sudo lxc exec ${vm_name} -- sh -c "snap install rustup --classic && rustup default nightly"
 }
 
