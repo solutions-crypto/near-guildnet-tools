@@ -1,66 +1,99 @@
 #!/bin/bash
-# 
-# This script was created by # Rickrods @ crypto-solutions.net for the NEAR Guildnet Network
-# The script will setup neard as a system service using an unprivilaged user account
+
+###############################################################################################
+#
+#  This script will set up the neard binary as a system service
+#
+###############################################################################################
+echo "*!! NEAR Install Script Starting !!*"
+echo "** Please enter the name of the network you wish to connect to betanet, guildnet, mainnet, testnet are all valid **"
+read NETWORK
+
+# Get the correct config.json
+GUILDNET_CONFIG_URL="https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/config.json"
+GUILDNET_GENESIS_URL="https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/genesis.json"
+
+echo "* Setting up required accounts, groups, and privilages"
+group_check=$(cat /etc/group | grep near)
+if [ -z "$group_check" ]
+then
+sudo groupadd near
+else 
+echo "The group near already exists"
+
+user_check=$(cat /etc/passwd | grep neard)
+if [ -z "$user_check" ]
+then
+sudo adduser --system --disabled-login --ingroup near --home /home/neard --disabled-password neard
+else 
+echo "The user neard already exists"
 
 
-set -eu
+# Copy Guildnet Files to a suitable location
+sudo mkdir -p /home/neard/.near/guildnet
+sudo mkdir -p /home/neard/.neard-service
 
-# Create the new user account and group for the service to use
-function create_user_and_group
-{
-    echo '* Guildnet Install Script Starting'
-    echo '* Setting up required accounts, groups, and privilages'
+sudo cp -p /tmp/near/neard /usr/local/bin
 
-    # Adding group NEAR for any NEAR Services such as Near Exporter
+echo '* Getting the correct files and fixing permissions'
+sudo neard --home /home/neard/.near/guildnet init --download-genesis --chain-id guildnet --account-id $VALIDATOR_ID
+sudo wget $CONFIG_URL -O /home/neard/.near/guildnet/config.json
+sudo wget $GENESIS_URL -O /home/neard/.near/guildnet/genesis.json
+sudo chown neard:near -R /home/neard/
 
-    if grep -q near /etc/group
-    then
-         echo "group 'near' exists"
-    else
-         groupadd near
-    fi
+echo "* Creating systemd unit file for NEAR validator service"
 
-    # Adding an unprivileged user for the neard service
-    if grep -q neard /etc/passwd
-    then
-         echo "account 'neard' exists"
-    else
-        adduser --system --home /home/neard --disabled-login --ingroup near neard || true
-    fi
-}
+sudo cat > /home/neard/service/neard.service <<EOF
+[Unit]
+Description=NEAR Validator Service
+Documentation=https://github.com/nearprotocol/nearcore
+Wants=network-online.target
+After=network-online.target
 
-# Create the system service. It will run with the new account name: neard
-function create_neard_service
-{
-    # Copy the systemd unit file to a suitable location and create a link /etc/systemd/system/neard.service
-    mkdir -p /home/neard/service && cd /home/neard/service
-    wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/main/neard.service 
-    rm -rf /etc/systemd/system/neard.service && sudo ln -s /home/neard/service/neard.service /etc/systemd/system/neard.service
-    
-    # Extract neard from /tmp/near/nearcore.tar to /usr/local/bin/neard
-    cd /tmp/near
-    tar -xf nearcore.tar
-    cp -p /tmp/near/binaries/neard /usr/local/bin
+[Service]
+Type=exec
+User=neard
+Group=near
+ExecStart=neard --home /home/neard/.near/guildnet run
+Restart=on-failure
+RestartSec=80
+#StandardOutput=append:/var/log/guildnet.log
 
-    # Initialize neard with correct settings
-    echo '* Getting the correct files and fixing permissions'
-    mkdir -p /home/neard/.near/guildnet && cd /home/neard/.near/guildnet
-    neard --home /home/neard/.near/guildnet init --download-genesis --chain-id guildnet --account-id "$VALIDATOR_ID"
-    sleep 10
-    rm /home/neard/.near/guildnet/config.json && rm /home/neard/.near/guildnet/genesis.json
-    wget https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/genesis.json
-    wget https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/config.json
-    chown -R neard:near -R /home/neard/
+[Install]
+WantedBy=multi-user.target
+EOF
 
-    # Configure Logging
-    echo '* Adding logfile conf for neard'
-    mkdir -p /usr/lib/systemd/journald.conf.d && cd /usr/lib/systemd/journald.conf.d
-    wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/main/neard.conf
-    
-    # Clean Up
-    echo '* Deleting temp files'
-    mkdir /home/neard/binaries && cp /tmp/near/binaries/* /home/neard/binaries/
-    rm -rf /tmp/near/binaries/
-    verify_install
-}
+ln -s /home/neard/service/neard.service /etc/systemd/system/neard.service
+
+echo '* Adding logfile conf for neard'
+sudo mkdir -p /usr/lib/systemd/journald.conf.d
+sudo cat > /usr/lib/systemd/journald.conf.d/neard.conf <<EOF
+#  This file is part of systemd
+#
+# This file controls the logging behavior of the service
+# You can change settings by editing this file.
+# Defaults can be restored by simply deleting this file.
+#
+# See journald.conf(5) for details.
+[Journal]
+Storage=auto
+ForwardToSyslog=no
+Compress=yes
+#Seal=yes
+#SplitMode=uid
+SyncIntervalSec=1m
+RateLimitInterval=30s
+#RateLimitBurst=1000
+EOF
+
+echo '* Service Status 'sudo systemctl status neard.service' *'
+sudo systemctl enable neard.service
+sudo systemctl status neard.service
+
+echo '* The installation has completed removing the installer'
+lxc stop compiler
+lxc delete compiler
+#sudo snap remove --purge lxd
+rm -rf /tmp/near
+
+echo '* You should restart the machine now due to changes made to the logging system then check your validator key'
