@@ -2,8 +2,6 @@
 set -eu
 # Script settings 
 RELEASE=$(lsb_release -c -s)
-# Change this to compile a different
-NEAR_VERSION=1.17.
 # Change this to use a different repo
 NEAR_REPO="https://github.com/solutions-crypto/nearcore.git"
 vm_name="compiler"
@@ -11,6 +9,13 @@ vm_name="compiler"
 echo "* Starting the GUILDNET build process"
 
 VALIDATOR_ID=$(read -t 20 -p "What is your validator accountId?")
+
+echo "***  Press enter to accept the default nearcore version 1.17. 0-rc.5 or enter a custom version here  ***"
+read -r NEAR_VERSION
+if [ -z "$NEAR_VERSION" ]
+then
+NEAR_VERSION=1.17.0-rc.5
+fi
 
 function update_via_apt
 {
@@ -60,6 +65,7 @@ EOF
 systemctl restart snapd
 sleep 5
 }
+
 
 function launch_container 
 {
