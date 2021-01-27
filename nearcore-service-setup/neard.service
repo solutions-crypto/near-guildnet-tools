@@ -1,0 +1,17 @@
+[Unit]
+Description=NEAR Validator Service
+Documentation=https://github.com/near-guildnet/nearcore
+Requires=network-online.target
+
+[Service]
+Type=simple
+User=neard
+Group=near
+ExecStart=/usr/local/bin/neard --home /home/neard/.near/guildnet run
+Restart=on-failure
+RestartSec=120
+# Uncomment the next line to append to a logfile
+# StandardOutput=append:/var/log/guildnet.log
+
+[Install]
+WantedBy=multi-user.target
