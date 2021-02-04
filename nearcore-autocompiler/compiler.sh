@@ -3,7 +3,7 @@ set -eu
 # Script settings
 RELEASE=$(lsb_release -c -s)
 # Change this to compile a different
-NEAR_VERSION=1.17.0-rc.5
+NEAR_VERSION="1.17.0-rc.5"
 # Change this to use a different repo
 NEAR_REPO="https://github.com/near-guildnet/nearcore.git"
 NODE_EXPORTER_REPO="https://github.com/prometheus/node_exporter.git"
@@ -31,6 +31,7 @@ function update_via_apt
     then
         snap install lxd
         usermod -aG lxd "$USER"
+        snap restart lxd
         init_lxd
     fi
 }
@@ -72,49 +73,53 @@ EOF
     sleep 5
 }
 
-function launch_container
+function get_container
 {
     echo "* Detected Ubuntu $RELEASE"
-    echo "* Checking for conficting containers"
-    CONF_CHK=$(lxc list | grep compiler)
-    COMPILER_STATUS=$(lxc info compiler | grep stopped)
-    if [ -n "$CONF_CHK" ] && [ -n "$COMPILER_STATUS" ]
+    echo "* Checking for existing containers"
+    CONF_CHK=$(lxc list | grep ${vm_name})
+    if [ ! -z "$CONF_CHK" ]
     then
-    lxc stop ${vm_name}
-    lxc rename ${vm_name} ${vm_name}old
-    else
-    if [ -n "$CONF_CHK" ] && [ -z "$COMPILER_STATUS" ]
-    then
-    lxc rename ${vm_name} ${vm_name}old
+    echo "* Found an existing container with the same name attempting to use that"
+    prepare_contaioner
     fi
-    
-    if [ "$RELEASE" == "focal" ] && [ -z "$CONF_CHK" ]
+
+    if [ "$RELEASE" == "focal" ]
     then
-    echo "* Launching Ubuntu $RELEASE LXC container to build in"
+    echo "* Launching Ubuntu Cloud Image  $RELEASE LXC container to build in"
     lxc launch images:ubuntu/focal/cloud/amd64 ${vm_name}
+    prepare_contaioner
     fi
-    if [ "$RELEASE" == "bionic" ] && [ -z "$CONF_CHK" ]
+
+    if [ "$RELEASE" == "bionic" ]
     then
     echo "* Launching Ubuntu $RELEASE LXC container to build in"
     lxc launch images:ubuntu/18.04/cloud/amd64 ${vm_name}
+    prepare_contaioner
     fi
+}
+
+function prepare_contaioner
+{
     echo "* Pausing for 15 seconds while the container initializes"
     sleep 15
-    echo "* Install Required Packages"
-    fi
-    lxc exec ${vm_name} -- /usr/bin/apt-get -qq update
-    lxc exec ${vm_name} -- /usr/bin/apt-get -qq upgrade
-    lxc exec ${vm_name} -- /usr/bin/apt-get -qq autoremove
-    lxc exec ${vm_name} -- /usr/bin/apt-get -qq autoclean
-    lxc exec ${vm_name} -- /usr/bin/apt-get -qq install git curl libclang-dev build-essential iperf llvm runc gcc g++ g++-multilib make cmake clang pkg-config libssl-dev libudev-dev libx32stdc++6-7-dbg lib32stdc++6-7-dbg python3-dev
-    lxc exec ${vm_name} -- /usr/bin/snap install rustup --classic
-    lxc exec ${vm_name} -- /usr/bin/snap install go --classic
-    lxc exec ${vm_name} -- /snap/bin/rustup default nightly
-    lxc exec ${vm_name} -- /snap/bin/rustup update
+
+    echo "* Configuring the container with all required development tools"
+    lxc exec ${vm_name} -- sh -c "apt-get -qq update"
+    lxc exec ${vm_name} -- sh -c "apt-get -qq upgrade"
+    lxc exec ${vm_name} -- sh -c "apt-get -qq autoremove"
+    lxc exec ${vm_name} -- sh -c "apt-get -qq autoclean"
+    lxc exec ${vm_name} -- sh -c "apt-get -qq install git snapd curl libclang-dev build-essential llvm runc gcc g++ g++-multilib make cmake clang pkg-config libssl-dev libudev-dev libx32stdc++6-7-dbg lib32stdc++6-7-dbg python3-dev"
+    lxc exec ${vm_name} -- sh -c "snap install rustup --classic"
+    lxc exec ${vm_name} -- sh -c "snap install go --classic"
+    lxc exec ${vm_name} -- sh -c "rustup default nightly"
+    lxc exec ${vm_name} -- sh -c "rustup update"
+    echo "* The container is ready for use"
+    compile
 }
 
 
-function compile_source
+function compile
 {
     echo "* Cloning the github source"
     lxc exec ${vm_name} -- sh -c "rm -rf /tmp/src && mkdir -p /tmp/src/ && git clone ${NEAR_REPO} /tmp/src/nearcore"
@@ -122,30 +127,39 @@ function compile_source
     lxc exec ${vm_name} -- sh -c "git clone ${NODE_EXPORTER_REPO} /tmp/src/node-exporter"
     echo "* Switching Version"
     lxc exec ${vm_name} -- sh -c "cd /tmp/src/nearcore && git checkout $NEAR_VERSION"
-    echo "* Attempting to compile"
+    echo "* Attempting to compile nearcore"
     lxc exec ${vm_name} -- sh -c "cd /tmp/src/nearcore && cargo build -p neard --release"
+    echo "* Attempting to compile Near Prometheus Exporter"
     lxc exec ${vm_name} -- sh -c "cd /tmp/src/near-prometheus-exporter && go build -a -installsuffix cgo -ldflags="-w -s" -o main ."
-    lxc exec ${vm_name} -- sh -c "/tmp/src/node-exporter/make"
+    echo "* Attempting to compile Prometheus Node Exporter"
+    lxc exec ${vm_name} -- sh -c "cd /tmp/src/node-exporter/ && make all"
+    lxc exec ${vm_name} -- sh -c "mkdir -p /tmp/src/node-exporter/node_exporter_binaries && cp -r /tmp/src/node-exporter/docs /tmp/src/node-exporter/node_exporter_binaries"
+    lxc exec ${vm_name} -- sh -c "cp -r /tmp/src/node-exporter/examples /tmp/src/node-exporter/node_exporter_binaries && cp -r /tmp/src/node-exporter/node_exporter /tmp/src/node-exporter/node_exporter_binaries"
+    lxc exec ${vm_name} -- sh -c "cp /tmp/src/node-exporter/*.yml /tmp/src/node-exporter/node_exporter_binaries && cp /tmp/src/node-exporter/*.md /tmp/src/node-exporter/node_exporter_binaries"
+    lxc exec ${vm_name} -- sh -c "cp -r /tmp/src/node-exporter/text_collector_examples/ /tmp/src/node-exporter/node_exporter_binaries && cp -r /tmp/src/node-exporter/tls_config_noAuth.bad.yml /tmp/src/node-exporter/node_exporter_binaries"
+    lxc exec ${vm_name} -- sh -c "tar -cjf /tmp/src/node-exporter/node_exporter.tar.gz -C /tmp/src/node-exporter/ node_exporter_binaries"
 }
 
-function get_compiled_binary
+function get_binary
 {
-    echo "* Retriving the binary files and storing in /usr/local/bin"
-    lxc file pull ${vm_name}/tmp/src/nearcore/target/release/neard /usr/local/bin/neard
-    lxc file pull ${vm_name}/tmp/src/near-prometheus-exporter/main /usr/local/bin/near-exporter
-    lxc file pull ${vm_name}/tmp/src/node-exporter/node_exporter /usr/local/bin/near-exporter
+    echo "* Retriving the binary files"
+    mkdir -p /tmp/binaries/
+    lxc file pull -P $vm_name/tmp/src/nearcore/target/release/neard /tmp/binaries/
+    lxc file pull -P $vm_name/tmp/src/near-prometheus-exporter/main /tmp/binaries/
+    lxc file pull -p $vm_name/tmp/src/node-exporter/node_exporter.tar.gz /tmp/ 
+    lxc file pull -p $vm_name/tmp/src/node-exporter/node_exporter /tmp/binaries/ 
 }
 
 
 if [ "$USER" != "root" ]
 then
-    echo " You must run the compile script using sudo"
+    echo " You must run the compile script using:  sudo ./compiler.sh "
     exit
 fi
 update_via_apt
-launch_container
-compile_source
-get_compiled_binary
+get_container
+compile
+get_binary
 
-echo "** You have now compiled the nearcore binary neard. It is located in /tmp/"
-echo "** Please refer to the readme file in the installer folder for further instructions**"
+echo "** The binary files are located in /tmp/binaries"
+echo "** Please refer to the readme file for further instructions**"
