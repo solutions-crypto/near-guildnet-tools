@@ -8,7 +8,7 @@ NEAR_VERSION="1.17.0-rc.5"
 NEAR_REPO="https://github.com/near-guildnet/nearcore.git"
 NODE_EXPORTER_REPO="https://github.com/prometheus/node_exporter.git"
 NEAR_EXPORTER_REPO="https://github.com/masknetgoal634/near-prometheus-exporter.git"
-vm_name="compiler"
+vm_name="compiler$RANDOM"
 
 echo "* Starting the NEARCORE compile process"
 
@@ -16,29 +16,22 @@ function update_via_apt
 {
     echo "* Updating via APT and installing required packages"
     apt-get -qq update && apt-get -qq upgrade
-    TEST=$(snap -h | tail -n 1)
-    SNAP=$(echo "$TEST" | cut -c1-5)
-    if [ "$SNAP" = "For a" ]
-    then
-        echo "snap is already installed"
-    else
-        apt-get -qq install snapd squashfs-tools git curl python3
-        sleep 5
-    fi
+    apt-get -qq install snapd squashfs-tools git curl python3
+
     echo '* Install lxd using snap'
-    LXD=$(snap list lxd | tail -n 1)
-    if [ "$LXD" = "error: no matching snaps installed" ]
-    then
-        snap install lxd
-        usermod -aG lxd "$USER"
-        snap restart lxd
-        init_lxd
-    fi
+    snap install lxd
+    usermod -aG lxd "$USER"
+    systemctl restart snapd
+    sleep 5
+    snap restart lxd
+    sleep 5
+    init_lxd
 }
 
 function init_lxd
 {
-    echo "* Initializing LXD"
+    echo "* Init LXD With Preseed ---> https://linuxcontainers.org/lxd/docs/master/preseed  "
+    echo "* Cloud init with lxd examples  ---> https://github.com/lxc/lxd/issues/3347 "
     cat <<EOF | lxd init --preseed
 config: {}
 networks:
@@ -60,7 +53,7 @@ profiles:
   devices:
     eth0:
       name: eth0
-      network: lxdbr1
+      network: lxdbr0
       type: nic
     root:
       path: /
@@ -76,24 +69,16 @@ EOF
 function get_container
 {
     echo "* Detected Ubuntu $RELEASE"
-    echo "* Checking for existing containers"
-    CONF_CHK=$(lxc list | grep ${vm_name})
-    if [ ! -z "$CONF_CHK" ]
-    then
-    echo "* Found an existing container with the same name attempting to use that"
-    prepare_contaioner
-    fi
-
     if [ "$RELEASE" == "focal" ]
     then
-    echo "* Launching Ubuntu Cloud Image  $RELEASE LXC container to build in"
+    echo "* Launching Ubuntu $RELEASE Cloud Image"
     lxc launch images:ubuntu/focal/cloud/amd64 ${vm_name}
     prepare_contaioner
     fi
 
     if [ "$RELEASE" == "bionic" ]
     then
-    echo "* Launching Ubuntu $RELEASE LXC container to build in"
+    echo "* Launching Ubuntu $RELEASE Cloud Image"
     lxc launch images:ubuntu/18.04/cloud/amd64 ${vm_name}
     prepare_contaioner
     fi
@@ -115,7 +100,6 @@ function prepare_contaioner
     lxc exec ${vm_name} -- sh -c "rustup default nightly"
     lxc exec ${vm_name} -- sh -c "rustup update"
     echo "* The container is ready for use"
-    compile
 }
 
 
@@ -132,7 +116,7 @@ function compile
     echo "* Attempting to compile Near Prometheus Exporter"
     lxc exec ${vm_name} -- sh -c "cd /tmp/src/near-prometheus-exporter && go build -a -installsuffix cgo -ldflags="-w -s" -o main ."
     echo "* Attempting to compile Prometheus Node Exporter"
-    lxc exec ${vm_name} -- sh -c "cd /tmp/src/node-exporter/ && make all"
+    lxc exec ${vm_name} -- sh -c "cd /tmp/src/node-exporter/ && make "
     lxc exec ${vm_name} -- sh -c "mkdir -p /tmp/src/node-exporter/node_exporter_binaries && cp -r /tmp/src/node-exporter/docs /tmp/src/node-exporter/node_exporter_binaries"
     lxc exec ${vm_name} -- sh -c "cp -r /tmp/src/node-exporter/examples /tmp/src/node-exporter/node_exporter_binaries && cp -r /tmp/src/node-exporter/node_exporter /tmp/src/node-exporter/node_exporter_binaries"
     lxc exec ${vm_name} -- sh -c "cp /tmp/src/node-exporter/*.yml /tmp/src/node-exporter/node_exporter_binaries && cp /tmp/src/node-exporter/*.md /tmp/src/node-exporter/node_exporter_binaries"
