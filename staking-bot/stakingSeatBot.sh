@@ -1,15 +1,29 @@
-
 #!/bin/bash
-PATH="/usr/local/bin:/usr/bin:/bin"
-PATH=$PATH
-DEBUG_ALL=0
-DEBUG_MIN=0
 
-# SETTINGS
+# This script will manage your validators stake.
+
+
+#############################################
+#                                           #
+#  Enter your information in this section   #
+#              # SETTINGS                   #
+#############################################
+# Only guildnet has been tested
 NETWORK="guildnet"
-POOL_ID="YOURPOOLI.guildnet"
-ACCOUNT_ID="YOURACCOUNT.guildnet"
+
+# Example "beastake.stake.guildnet" 
+POOL_ID="<POOL_ID>.stake.guildnet"
+ACCOUNT_ID="<ACCOUNT_ID>.guildnet"
+
+# Enter a NUMBER 
 NUM_SEATS_TO_OCCUPY=????
+
+# Email Notification Settings
+FROM_ADDRESS=
+TO_ADDRESS=
+# Number of missed blocks before an email is sent
+ALERT_MISSING_BLOCKS=10
+
 
 # Epoch Lengths
 GUILDNET_EPOCH_LEN=5000
@@ -19,7 +33,6 @@ MAINET_EPOCH_LEN=43200
 
 # Additional Script Configuration
 ADD0=000000000000000000000000
-SEAT_PRICE_BUFFER=10000
 COMMA=","
 #DOUBLE_QUOTE="\""
 
@@ -50,6 +63,16 @@ case $NETWORK in
     ;;
 esac
 
+
+
+function send_email_notify() 
+{
+  PRODUCED_BLOCKS=$(curl -s -d '{"jsonrpc": "2.0", "method": "validators", "id": "dontcare", "params": [null]}' -H 'Content-Type: application/json' "$HOST" | jq -c ".result.current_validators[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .num_produced_blocks)
+  EXPECTED_BLOCKS=$(curl -s -d '{"jsonrpc": "2.0", "method": "validators", "id": "dontcare", "params": [null]}' -H 'Content-Type: application/json' "$HOST" | jq -c ".result.current_validators[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .num_expected_blocks)
+  BLOCKS_MISSED=$((EXPECTED_BLOCKS-PRODUCED_BLOCKS))
+  
+  echo "<strong>Guildnet Pool is Missing Blocks:</strong><br>Expected: $EXPECTED_BLOCKS<br>Produced: $PRODUCED_BLOCKS<br>Blocks Missed: $BLOCKS_MISSED" | mail -a "From: NEAR [StakingBot] Monitor <$FROM_ADDRESS>" -a "Content-Type: text/html" -s "NEAR [PROD] - Missing Blocks" -b "$TO_ADDRESS"
+}
 echo "Starting Script"
 echo "---------------"
 
@@ -157,20 +180,7 @@ then
   echo "Next Stake Long: $VALIDATOR_NEXT_STAKE_L"
 fi
 
-KICK_REASON=$(echo "$VALIDATORS" | jq -c ".result.prev_epoch_kickout[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .reason)
-if [[ "$KICK_REASON" && "$DEBUG_MIN" == "1" ]]
-then
-    echo "Validator Kicked Reason = $KICK_REASON"
-    PING_COMMAND=$(near call $POOL_ID ping "{}" --accountId $ACCOUNT_ID)
-    echo "$PING_COMMAND"
-    exit
-fi
-if [[ "$KICK_REASON" && "$DEBUG_MIN" == "0" ]]
-then
-    echo "Validator was Kicked Pinging"
-    echo "$PING_COMMAND"
-    exit
-fi
+
 
 # Proposal for epoch +2
 OUR_PROPOSAL=$(echo "$VALIDATORS" | jq -c ".result.current_proposals[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .stake)
@@ -232,6 +242,33 @@ SEAT_PRICE_PROPOSALS=$((SEAT_PRICE_PROPOSALS + SEAT_PRICE_BUFFER))
 if [ "$DEBUG_MIN" == "1" ]
 then
   echo "Seat Price Proposals: $SEAT_PRICE_PROPOSALS"
+fi
+
+# Validator Kicked Check then notify
+KICK_REASON=$(echo "$VALIDATORS" | jq -c ".result.prev_epoch_kickout[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .reason)
+KICKED_EMAIL=$(echo "<strong> The validator $POOL_ID has been kicked for $KICK_REASON <strong><br>Action Taken:  A new proposal has been submitted.<br>Produced: $PRODUCED_BLOCKS<br>Blocks Missed: $BLOCKS_MISSED"<br>Latest Seat Price: $SEAT_PRICE_PROPOSALS<br>Validators Stake: $PROPOSAL_STAKE | mail -a "From:  NEAR Staking Monitor <$FROM_ADDRESS>" -a "Content-Type: text/html" -s "$POOL_ID - Kicked for $KICK_REASON" -b "$TO_ADDRESS")
+if [[ "$KICK_REASON" && "$DEBUG_MIN" == "1" ]]
+then
+    echo "Validator Kicked Reason = $KICK_REASON"
+    PING_COMMAND=$(near call $POOL_ID ping "{}" --accountId $ACCOUNT_ID)
+    echo "$PING_COMMAND"
+    echo "$KICKED_EMAIL"
+    exit
+fi
+if [[ "$KICK_REASON" && "$DEBUG_MIN" == "0" ]]
+then
+    echo "$PING_COMMAND"
+    echo "$KICKED_EMAIL"
+    exit
+fi
+
+PRODUCED_BLOCKS=$(curl -s -d '{"jsonrpc": "2.0", "method": "validators", "id": "dontcare", "params": [null]}' -H 'Content-Type: application/json' "$HOST" | jq -c ".result.current_validators[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .num_produced_blocks)
+EXPECTED_BLOCKS=$(curl -s -d '{"jsonrpc": "2.0", "method": "validators", "id": "dontcare", "params": [null]}' -H 'Content-Type: application/json' "$HOST" | jq -c ".result.current_validators[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .num_expected_blocks)
+BLOCKS_MISSED=$((EXPECTED_BLOCKS-PRODUCED_BLOCKS))
+
+if [ "$BLOCKS_MISSED" -gt "$ALERT_MISSING_BLOCKS" ]
+then
+echo "<strong>$POOL_ID Pool is Missing Blocks:</strong><br>Expected: $EXPECTED_BLOCKS<br>Produced: $PRODUCED_BLOCKS<br>Blocks Missed: $BLOCKS_MISSED<br>Alert Trigger: $ALERT_MISSING_BLOCKS Missing Blocks" | mail -a "From: NEAR Staking Monitor <$FROM_ADDRESS>" -a "Content-Type: text/html" -s "NEAR [PROD] - Missing Blocks" -b "$TO_ADDRESS"
 fi
 
 function stake

@@ -74,16 +74,76 @@ sudo cat > /usr/lib/systemd/journald.conf.d/neard.conf <<EOF
 # You can change settings by editing this file.
 # Defaults can be restored by simply deleting this file.
 #
-# See journald.conf(5) for details.
+# See journald.conf(5) for details. This is the link. 
+# https://manpages.debian.org/testing/systemd/journald.conf.5.en.html
+
 [Journal]
+
+# Storage Controls where to store journal data
+# Valid options: "volatile", "persistent", "auto" or "none"
 Storage=auto
+
+# Control whether log messages received by the journal daemon shall be forwarded to a traditional syslog daemon, to the kernel log buffer (kmsg), to the system console, or sent as wall messages to all logged-in users
+# Accepts boolean value
 ForwardToSyslog=no
+
+#ForwardToKMsg=
+#ForwardToConsole= 
+#ForwardToWall=
+
+# Controls the maximum log level of messages that are stored in the journal, forwarded to syslog, kmsg, the console or wall
+# As argument, takes one of "emerg", "alert", "crit", "err", "warning", "notice", "info", "debug", or integer values in the range of 0–7 (corresponding to the same levels)
+#MaxLevelStore=
+#MaxLevelSyslog=
+#MaxLevelKMsg=
+#MaxLevelConsole=
+#MaxLevelWall=
+
+
+# Accepts a boolean value.
 Compress=yes
+
+# Takes a boolean value requires a seal key
 #Seal=yes
+
+# Controls whether to split up journal files per user
 #SplitMode=uid
-SyncIntervalSec=1m
-RateLimitInterval=30s
-#RateLimitBurst=1000
+
+# The maximum time to store entries in a single journal file before rotating to the next one
+#MaxFileSec=
+
+# The maximum time to store journal entries
+#MaxRetentionSec=
+
+
+# The timeout before synchronizing journal files to disk
+SyncIntervalSec=6m
+
+# If, in the time interval defined by RateLimitIntervalSec more messages than specified in RateLimitBurst 
+# are logged by a service, all further messages within the interval are dropped until the interval is over
+# Set either value to 0 to disable. 
+# Note that the effective rate limit is multiplied by a factor derived from the available free disk space for the journal. 
+# Currently, this factor is calculated using the base 2 logarithm.
+RateLimitInterval=30m
+RateLimitBurst=1000
+
+# Enforce size limits on the journal files stored
+#SystemMaxUse= 
+#SystemKeepFree= 
+#SystemMaxFileSize= 
+#SystemMaxFiles= 
+#RuntimeMaxUse= 
+#RuntimeKeepFree= 
+#RuntimeMaxFileSize= 
+#RuntimeMaxFiles=
+
+
+# These all accept boolean value see link at top
+#ReadKMsg=
+#Audit=
+#TTYPath=
+#LineMax=
+
 EOF
 
 echo '* Service Status 'sudo systemctl status neard.service' *'
