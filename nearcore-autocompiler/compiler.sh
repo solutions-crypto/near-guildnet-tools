@@ -77,11 +77,17 @@ function launch_container
     echo "* Detected Ubuntu $RELEASE"
     echo "* Checking for conficting containers"
     CONF_CHK=$(lxc list | grep compiler)
-    if [ -n "$CONF_CHK" ]
+    COMPILER_STATUS=$(lxc info compiler | grep stopped)
+    if [ -n "$CONF_CHK" ] && [ -n "$COMPILER_STATUS" ]
     then
     lxc stop ${vm_name}
     lxc rename ${vm_name} ${vm_name}old
     else
+    if [ -n "$CONF_CHK" ] && [ -z "$COMPILER_STATUS" ]
+    then
+    lxc rename ${vm_name} ${vm_name}old
+    fi
+    
     if [ "$RELEASE" == "focal" ] && [ -z "$CONF_CHK" ]
     then
     echo "* Launching Ubuntu $RELEASE LXC container to build in"
