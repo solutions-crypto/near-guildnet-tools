@@ -8,7 +8,7 @@ NEAR_VERSION="1.17.0-rc.5"
 NEAR_REPO="https://github.com/near-guildnet/nearcore.git"
 NODE_EXPORTER_REPO="https://github.com/prometheus/node_exporter.git"
 NEAR_EXPORTER_REPO="https://github.com/masknetgoal634/near-prometheus-exporter.git"
-vm_name="compiler$RANDOM"
+vm_name="compiler"
 
 echo "* Starting the NEARCORE compile process"
 
@@ -32,35 +32,7 @@ function init_lxd
 {
     echo "* Init LXD With Preseed ---> https://linuxcontainers.org/lxd/docs/master/preseed  "
     echo "* Cloud init with lxd examples  ---> https://github.com/lxc/lxd/issues/3347 "
-    cat <<EOF | lxd init --preseed
-config: {}
-networks:
-- config:
-    ipv4.address: auto
-    ipv6.address: none
-  description: ""
-  name: lxdbr0
-  type: ""
-  project: default
-storage_pools:
-- config:
-  description: ""
-  name: default-compiler
-  driver: dir
-profiles:
-- name: default-compiler
-  description: "default compiling profile"
-  devices:
-    eth0:
-      name: eth0
-      network: lxdbr0
-      type: nic
-    root:
-      path: /
-      pool: default
-      type: disk
-  name: default-compiler
-cluster: null
+    cat <<EOF | lxd init --auto
 EOF
     systemctl restart snapd
     sleep 5
@@ -128,10 +100,10 @@ function get_binary
 {
     echo "* Retriving the binary files"
     mkdir -p /tmp/binaries/
-    lxc file pull -P $vm_name/tmp/src/nearcore/target/release/neard /tmp/binaries/
-    lxc file pull -P $vm_name/tmp/src/near-prometheus-exporter/main /tmp/binaries/
-    lxc file pull -p $vm_name/tmp/src/node-exporter/node_exporter.tar.gz /tmp/ 
-    lxc file pull -p $vm_name/tmp/src/node-exporter/node_exporter /tmp/binaries/ 
+    echo "lxc file pull -p ${vm_name}/tmp/src/nearcore/target/release/neard /tmp/binaries/"
+    lxc file pull -p ${vm_name}/tmp/src/near-prometheus-exporter/near-exporter /tmp/binaries/
+    lxc file pull -p ${vm_name}/tmp/src/node-exporter/node_exporter.tar.gz /tmp/
+    lxc file pull -p ${vm_name}/tmp/src/node-exporter/node_exporter /tmp/binaries/
 }
 
 
