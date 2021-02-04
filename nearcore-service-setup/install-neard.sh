@@ -7,7 +7,7 @@
 ###############################################################################################
 echo "*!! NEAR Install Script Starting !!*"
 echo "** Please enter the name of the network you wish to connect to betanet, guildnet, mainnet, testnet are all valid **"
-read NETWORK
+read -r NETWORK
 
 # Get the correct config.json
 GUILDNET_CONFIG_URL="https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/config.json"
@@ -20,6 +20,7 @@ then
 sudo groupadd near
 else 
 echo "The group near already exists"
+fi
 
 user_check=$(cat /etc/passwd | grep neard)
 if [ -z "$user_check" ]
@@ -27,7 +28,7 @@ then
 sudo adduser --system --disabled-login --ingroup near --home /home/neard --disabled-password neard
 else 
 echo "The user neard already exists"
-
+fi
 
 # Copy Guildnet Files to a suitable location
 sudo mkdir -p /home/neard/.near/guildnet
@@ -36,9 +37,9 @@ sudo mkdir -p /home/neard/.neard-service
 sudo cp -p /tmp/near/neard /usr/local/bin
 
 echo '* Getting the correct files and fixing permissions'
-sudo neard --home /home/neard/.near/guildnet init --download-genesis --chain-id guildnet --account-id $VALIDATOR_ID
-sudo wget $CONFIG_URL -O /home/neard/.near/guildnet/config.json
-sudo wget $GENESIS_URL -O /home/neard/.near/guildnet/genesis.json
+sudo neard --home /home/neard/.near/guildnet init --download-genesis --chain-id guildnet --account-id "$VALIDATOR_ID"
+sudo wget "$CONFIG_URL" -O /home/neard/.near/guildnet/config.json
+sudo wget "$GENESIS_URL" -O /home/neard/.near/guildnet/genesis.json
 sudo chown neard:near -R /home/neard/
 
 echo "* Creating systemd unit file for NEAR validator service"
@@ -146,7 +147,8 @@ RateLimitBurst=1000
 
 EOF
 
-echo '* Service Status 'sudo systemctl status neard.service' *'
+NEARD_STATUS=$(sudo systemctl status neard.service)
+echo "* Service Status $NEARD_STATUS *"
 sudo systemctl enable neard.service
 sudo systemctl status neard.service
 

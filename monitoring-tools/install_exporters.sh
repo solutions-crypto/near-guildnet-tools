@@ -20,7 +20,7 @@ else
     adduser --system --home /home/exporter --disabled-login --ingroup monitoring exporter || true
 fi
 # Create the unit file
-sudo cat > /etc/systemd/system/node_exporter.service <<EOF
+cat > /etc/systemd/system/node_exporter.service <<EOF
 
 [Unit]
 Description=Prometheus Node Exporter Service

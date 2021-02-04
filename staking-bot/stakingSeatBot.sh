@@ -16,7 +16,7 @@ POOL_ID="<POOL_ID>.stake.guildnet"
 ACCOUNT_ID="<ACCOUNT_ID>.guildnet"
 
 # Enter a NUMBER 
-NUM_SEATS_TO_OCCUPY=????
+NUM_SEATS_TO_OCCUPY="????"
 
 # Email Notification Settings
 FROM_ADDRESS=
@@ -196,8 +196,8 @@ echo "$PING_COMMAND"
 exit
 fi
 
-OUR_PROPOSAL_S=$(echo $OUR_PROPOSAL | sed 's/[^0-9]*//g')
-PROPOSAL_STAKE=$(echo $PROPOSAL_STAKE | sed 's/[^0-9]*//g')
+OUR_PROPOSAL_S=$(echo "$OUR_PROPOSAL" | sed 's/[^0-9]*//g')
+PROPOSAL_STAKE=$(echo "$PROPOSAL_STAKE" | sed 's/[^0-9]*//g')
 if [[ "$PROPOSAL_STAKE" && "$DEBUG_MIN" == "1" ]]
 then
 echo "Our Proposal: $OUR_PROPOSAL"
@@ -207,7 +207,7 @@ fi
 
 if [ "$DEBUG_ALL" == "1" ]
 then
-echo $VALIDATORS | jq -c ".result.current_proposals[]"
+echo "$VALIDATORS" | jq -c ".result.current_proposals[]"
 fi
 
 PROPOSAL_REASON=$(echo "$VALIDATORS" | jq -c ".result.current_proposals[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .reason)

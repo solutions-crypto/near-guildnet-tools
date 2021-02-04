@@ -31,7 +31,7 @@ function update_via_apt
 function init_lxd
 {
     echo "* Init LXD With Preseed ---> https://linuxcontainers.org/lxd/docs/master/preseed  "
-    echo "* Cloud init with lxd examples  ---> https://github.com/lxc/lxd/issues/3347 "
+    echo "* Cloud init + lxd examples  ---> https://github.com/lxc/lxd/issues/3347 "
     cat <<EOF | lxd init --auto
 EOF
     systemctl restart snapd
