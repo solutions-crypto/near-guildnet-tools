@@ -38,8 +38,8 @@ sudo cp -p /tmp/near/neard /usr/local/bin
 
 echo '* Getting the correct files and fixing permissions'
 sudo neard --home /home/neard/.near/guildnet init --download-genesis --chain-id guildnet --account-id "$VALIDATOR_ID"
-sudo wget "$CONFIG_URL" -O /home/neard/.near/guildnet/config.json
-sudo wget "$GENESIS_URL" -O /home/neard/.near/guildnet/genesis.json
+sudo wget "$GUILDNET_CONFIG_URL" -O /home/neard/.near/guildnet/config.json
+sudo wget "$GUILDNET_GENESIS_URL" -O /home/neard/.near/guildnet/genesis.json
 sudo chown neard:near -R /home/neard/
 
 echo "* Creating systemd unit file for NEAR validator service"
@@ -148,13 +148,12 @@ RateLimitBurst=1000
 EOF
 
 NEARD_STATUS=$(sudo systemctl status neard.service)
-echo "* Service Status $NEARD_STATUS *"
 sudo systemctl enable neard.service
 sudo systemctl status neard.service
 
 echo '* The installation has completed removing the installer'
 lxc stop compiler
-lxc delete compiler
+#lxc delete compiler
 #sudo snap remove --purge lxd
 rm -rf /tmp/near
 

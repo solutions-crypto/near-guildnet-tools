@@ -100,9 +100,9 @@ function get_binary
 {
     echo "* Retriving the binary files"
     mkdir -p /tmp/binaries/
-    echo "lxc file pull -p ${vm_name}/tmp/src/nearcore/target/release/neard /tmp/binaries/"
+    lxc file pull -p ${vm_name}/tmp/src/nearcore/target/release/neard /tmp/binaries/
     lxc file pull -p ${vm_name}/tmp/src/near-prometheus-exporter/near-exporter /tmp/binaries/
-    lxc file pull -p ${vm_name}/tmp/src/node-exporter/node_exporter.tar.gz /tmp/
+    lxc file pull -p ${vm_name}/tmp/src/node-exporter/node_exporter.tar.gz /tmp/binaries/
     lxc file pull -p ${vm_name}/tmp/src/node-exporter/node_exporter /tmp/binaries/
 }
 
