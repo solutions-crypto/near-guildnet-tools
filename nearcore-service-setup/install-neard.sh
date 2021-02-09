@@ -35,7 +35,7 @@ fi
 
 # Copy Guildnet Files to a suitable location
 sudo mkdir -p /home/neard/.near/guildnet
-sudo mkdir -p /home/neard/neard/service
+sudo mkdir -p /home/neard/service
 
 sudo cp -p /tmp/near/neard /usr/local/bin
 
