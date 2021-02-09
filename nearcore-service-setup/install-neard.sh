@@ -35,11 +35,13 @@ fi
 
 # Copy Guildnet Files to a suitable location
 sudo mkdir -p /home/neard/.near/guildnet
-sudo mkdir -p /home/neard/.neard-service
+sudo mkdir -p /home/neard/neard/service
 
 sudo cp -p /tmp/near/neard /usr/local/bin
 
 echo '* Getting the correct files and fixing permissions'
+sudo cp /tmp/binaries/near* /usr/local/bin
+sudo cp /tmp/binaries/node_exporter /usr/local/bin
 sudo neard --home /home/neard/.near/guildnet init --download-genesis --chain-id guildnet --account-id "$VALIDATOR_ID"
 sudo wget "$GUILDNET_CONFIG_URL" -O /home/neard/.near/guildnet/config.json
 sudo wget "$GUILDNET_GENESIS_URL" -O /home/neard/.near/guildnet/genesis.json
@@ -64,6 +66,9 @@ RestartSec=45
 WantedBy=multi-user.target
 EOF
 
+ln -s /home/neard/service/node_exporter.service /etc/systemd/system/node_exporter.service 
+
+
 echo "* Creating systemd unit file for node_exporter service"
 
 sudo cat > /home/neard/service/node_exporter.service <<EOF
@@ -83,6 +88,8 @@ RestartSec=45
 WantedBy=multi-user.target
 
 EOF
+
+ln -s /home/neard/service/node_exporter.service /etc/systemd/system/node_exporter.service
 
 
 echo "* Creating systemd unit file for NEAR validator service"
