@@ -45,3 +45,47 @@ You should run the command newaliases after changing this file so it will be par
 ```
 sudo newaliases
 ```
+The Email address here is where any mail will be directed.
+```
+sudo nano /etc/postfix/virtual
+```
+  ```root you@yourdomain.com```
+
+The virtual alias map file also needs to be post mapped.
+
+```
+postmap /etc/postfix/virtual
+```
+
+In the main configuration file for postfix, update the values for the following lines, if a line is missing from your configuration file you’ll just need to add the whole line.
+
+```
+sudo nano /etc/postfix/main.cf
+```
+These settings tell postfix to use Gmail as a relay to send mail out, and then specify the parameters and credentials for connecting to Gmail.
+```
+relayhost = [smtp.gmail.com]:587
+smtp_tls_security_level = may
+smtp_sasl_auth_enable = yes
+smtp_sasl_security_options =
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+```
+
+These settings are for aliasing as explained above
+```
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+virtual_alias_maps = hash:/etc/postfix/virtual
+```
+I also remove all the values from mydestination, this tells postfix it is not to receive any mail on this system, it will only send it out the relay host or reject the message.
+```
+mydestination =
+```
+If you do not have IPv6 enabled, you will need to specify the following value in main.cf as well, often DNS queries for Gmail will return the IPv6 address first, and postfix will fail to send mail because the relay host is unreachable.
+```
+inet_protocols = ipv4
+```
+Restart postfix to apply the configuration.
+```
+systemctl restart postfix
+```
