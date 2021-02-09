@@ -1,15 +1,27 @@
-
 #!/bin/bash
-PATH="/usr/local/bin:/usr/bin:/bin"
-PATH=$PATH
-DEBUG_ALL=0
-DEBUG_MIN=0
 
-# SETTINGS
+# This script will manage your validators stake.
+
+
+#############################################
+#                                           #
+#  Enter your information in this section   #
+#              # SETTINGS                   #
+#############################################
+# Only guildnet has been tested
 NETWORK="guildnet"
-POOL_ID="YOURPOOLI.guildnet"
-ACCOUNT_ID="YOURACCOUNT.guildnet"
-NUM_SEATS_TO_OCCUPY=????
+# Example "beastake.stake.guildnet" 
+POOL_ID="pool.stake.guildnet"
+ACCOUNT_ID="account.guildnet"
+# Enter a NUMBER 
+NUM_SEATS_TO_OCCUPY=
+# Set Enable Email to 1 to enable email notifications and fill in the blanks
+ENABLE_EMAIL=0
+FROM_ADDRESS=
+TO_ADDRESS=
+# Number of missed blocks before an email is sent
+ALERT_MISSING_BLOCKS=10
+
 
 # Epoch Lengths
 GUILDNET_EPOCH_LEN=5000
@@ -19,7 +31,6 @@ MAINET_EPOCH_LEN=43200
 
 # Additional Script Configuration
 ADD0=000000000000000000000000
-SEAT_PRICE_BUFFER=10000
 COMMA=","
 #DOUBLE_QUOTE="\""
 
@@ -50,6 +61,8 @@ case $NETWORK in
     ;;
 esac
 
+
+
 echo "Starting Script"
 echo "---------------"
 
@@ -57,18 +70,24 @@ echo "---------------"
 if [ "$POOL_ID" == "???" ]
 then
 echo "You have not properly configured this script. Please edit the file and replace every instance of ??? with valid data"
+else
+echo "The script is configured"
 fi
 
 PUBLIC_KEY="near view $POOL_ID get_staking_key '{}' | tail -n 1"
 if [ "$DEBUG_ALL" == "1" ]
 then
 echo "The public key retrieved from the network for $POOL_ID is: $PUBLIC_KEY"
+else
+echo "We have the key"
 fi
 
 VALIDATORS=$(curl -s -d '{"jsonrpc": "2.0", "method": "validators", "id": "dontcare", "params": [null]}' -H 'Content-Type: application/json' $HOST )
 if [ "$DEBUG_ALL" == "1" ]
 then
   echo "Validators: $VALIDATORS"
+else
+echo "Validator Info Received"
 fi
 
 STATUS_VAR="/status"
@@ -77,6 +96,7 @@ if [ "$DEBUG_ALL" == "1" ]
 then
   echo "STATUS: $STATUS"
 fi
+
 
 EPOCH_START=$(echo "$VALIDATORS" | jq .result.epoch_start_height)
 if [ "$DEBUG_MIN" == "1" ]
@@ -119,6 +139,8 @@ case $NETWORK in
     ;;
 esac
 
+
+
 if [ "$DEBUG_MIN" == "1" ]
 then
 echo "Blocks Completed: $BLOCKS_COMPLETED"
@@ -157,20 +179,7 @@ then
   echo "Next Stake Long: $VALIDATOR_NEXT_STAKE_L"
 fi
 
-KICK_REASON=$(echo "$VALIDATORS" | jq -c ".result.prev_epoch_kickout[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .reason)
-if [[ "$KICK_REASON" && "$DEBUG_MIN" == "1" ]]
-then
-    echo "Validator Kicked Reason = $KICK_REASON"
-    PING_COMMAND=$(near call $POOL_ID ping "{}" --accountId $ACCOUNT_ID)
-    echo "$PING_COMMAND"
-    exit
-fi
-if [[ "$KICK_REASON" && "$DEBUG_MIN" == "0" ]]
-then
-    echo "Validator was Kicked Pinging"
-    echo "$PING_COMMAND"
-    exit
-fi
+
 
 # Proposal for epoch +2
 OUR_PROPOSAL=$(echo "$VALIDATORS" | jq -c ".result.current_proposals[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .stake)
@@ -186,8 +195,8 @@ echo "$PING_COMMAND"
 exit
 fi
 
-OUR_PROPOSAL_S=$(echo $OUR_PROPOSAL | sed 's/[^0-9]*//g')
-PROPOSAL_STAKE=$(echo $PROPOSAL_STAKE | sed 's/[^0-9]*//g')
+OUR_PROPOSAL_S=$(echo "$OUR_PROPOSAL" | sed 's/[^0-9]*//g')
+PROPOSAL_STAKE=$(echo "$PROPOSAL_STAKE" | sed 's/[^0-9]*//g')
 if [[ "$PROPOSAL_STAKE" && "$DEBUG_MIN" == "1" ]]
 then
 echo "Our Proposal: $OUR_PROPOSAL"
@@ -197,7 +206,7 @@ fi
 
 if [ "$DEBUG_ALL" == "1" ]
 then
-echo $VALIDATORS | jq -c ".result.current_proposals[]"
+echo "$VALIDATORS" | jq -c ".result.current_proposals[]"
 fi
 
 PROPOSAL_REASON=$(echo "$VALIDATORS" | jq -c ".result.current_proposals[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .reason)
@@ -233,6 +242,80 @@ if [ "$DEBUG_MIN" == "1" ]
 then
   echo "Seat Price Proposals: $SEAT_PRICE_PROPOSALS"
 fi
+
+PRODUCED_BLOCKS=$(curl -s -d '{"jsonrpc": "2.0", "method": "validators", "id": "dontcare", "params": [null]}' -H 'Content-Type: application/json' "$HOST" | jq -c ".result.current_validators[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .num_produced_blocks)
+EXPECTED_BLOCKS=$(curl -s -d '{"jsonrpc": "2.0", "method": "validators", "id": "dontcare", "params": [null]}' -H 'Content-Type: application/json' "$HOST" | jq -c ".result.current_validators[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .num_expected_blocks)
+BLOCKS_MISSED=$((EXPECTED_BLOCKS-PRODUCED_BLOCKS))
+
+function send_email_notify
+{
+    if [ "$ENABLE_EMAIL" = 1 ]
+    then
+    mail -s "NEAR Monitor: '$POOL_ID'" -a From:Admin\<$FROM_ADDRESS\> --return-address=$FROM_ADDRESS $TO_ADDRESS <<< 'Pool is Missing Blocks!!  
+    Expected: '$EXPECTED_BLOCKS'
+    Produced: '$PRODUCED_BLOCKS'
+    Blocks Missed: '$BLOCKS_MISSED'
+    Alert Trigger: '$ALERT_MISSING_BLOCKS' Missing Blocks'
+    else
+    echo "email alerts are disabled"
+    fi
+}
+
+
+# Check for missing blocks and email if over the limit
+
+#if [ $BLOCKS_MISSED = 0 ]
+#then
+#send_email_notify
+#fi
+if [ "$BLOCKS_MISSED" -gt "$ALERT_MISSING_BLOCKS" ]
+then
+send_email_notify
+fi
+#if [ "$BLOCKS_MISSED" -lt "$ALERT_MISSING_BLOCKS" ]
+#then
+#send_email_notify 
+#fi
+#if [ "$BLOCKS_MISSED" = "$ALERT_MISSING_BLOCKS" ]
+#then
+#send_email_notify
+#fi
+
+KICK_REASON=$(echo "$VALIDATORS" | jq -c ".result.prev_epoch_kickout[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .reason)
+KICKED_EMAIL=$(echo "<strong> The validator $POOL_ID has been kicked for $KICK_REASON <strong><br>Action Taken:  A new proposal has been submitted.<br>Produced: $PRODUCED_BLOCKS<br>Blocks Missed: $BLOCKS_MISSED<br>Latest Seat Price: $SEAT_PRICE_PROPOSALS<br>Validators Stake: $PROPOSAL_STAKE")
+function send_email_kick
+{
+    if [ "$ENABLE_EMAIL" = 1 ]
+    then
+    mail -s "NEAR Monitor: $POOL_ID" -a From:Admin\<admin@crypto-solutions.net\> --return-address=admin@crypto-solutions.net notifications@crypto-solutions.net <<< 'The validator '$POOL_ID' has been kicked for '$KICK_REASON' 
+    Action Taken:  A new proposal has been submitted.
+    Produced: '$PRODUCED_BLOCKS'
+    Blocks Missed: '$BLOCKS_MISSED'
+    Latest Seat Price: '$SEAT_PRICE_PROPOSALS'
+    Validators Stake: '$PROPOSAL_STAKE''
+    else
+    echo "Email notification are disabled"
+    fi
+}
+
+# Validator Kicked Check then notify
+if [[ "$KICK_REASON" && "$DEBUG_MIN" == "1" ]]
+then
+    echo "Validator Kicked Reason = $KICK_REASON"
+    PING_COMMAND=$(near call $POOL_ID ping "{}" --accountId $ACCOUNT_ID)
+    echo "$PING_COMMAND"
+    echo "$KICKED_EMAIL"
+    send_email_kick
+    exit
+fi
+if [[ "$KICK_REASON" && "$DEBUG_MIN" == "0" ]]
+then
+    echo "$PING_COMMAND"
+    send_email_kick
+    exit
+fi
+
+
 
 function stake
 {
@@ -278,7 +361,7 @@ then
     stake $SEAT_PRICE_DIFF
     echo Stake increased by "$SEAT_PRICE_DIFF"
     else
-      echo "The seat price difference of: $SEAT_PRICE_DIFF is not sufficent to trigger a transaction"
+      echo "The seat price difference of: $SEAT_PRICE_DIFF is not enough to trigger a transaction"
     fi
 fi
 
@@ -303,7 +386,7 @@ then
       echo "Decreasing stake by: ${AMOUNT}"
       unstake "$AMOUNT"
     else
-    echo "The seat price difference of: $NEW_PROPOSAL_NUMBERS is not sufficent to trigger a transaction"
+    echo "The seat price difference of: $NEW_PROPOSAL_NUMBERS is not enough to trigger a transaction"
     fi
 fi
 
