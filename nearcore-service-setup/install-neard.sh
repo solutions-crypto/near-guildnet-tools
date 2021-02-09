@@ -37,8 +37,6 @@ fi
 sudo mkdir -p /home/neard/.near/guildnet
 sudo mkdir -p /home/neard/service
 
-sudo cp -p /tmp/near/neard /usr/local/bin
-
 echo '* Getting the correct files and fixing permissions'
 sudo cp /tmp/binaries/near* /usr/local/bin
 sudo cp /tmp/binaries/node_exporter /usr/local/bin
@@ -80,7 +78,7 @@ Requires=network-online.target
 [Service]
 Type=simple
 User=exporter
-ExecStart=/var/lib/near/exporter/near-exporter -accountId "$VALIDATOR_ID" -addr ":9333"
+ExecStart=/usr/local/bin/near-exporter -accountId "$VALIDATOR_ID" -addr ":9333"
 Restart=on-failure
 RestartSec=45
 
@@ -105,7 +103,7 @@ After=network-online.target
 Type=exec
 User=neard
 Group=near
-ExecStart=neard --home /home/neard/.near/guildnet run
+ExecStart=/usr/local/bin/neard --home /home/neard/.near/guildnet run
 Restart=on-failure
 RestartSec=80
 #StandardOutput=append:/var/log/guildnet.log
