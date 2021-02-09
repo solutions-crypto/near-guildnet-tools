@@ -1,17 +1,38 @@
 ## Near Validator Stake management and Monitoring
 
+** Please note it is not advised to run this on the same machine as the validator service**
 
-- Tools Needed
+## Tools Needed
 
-  1. near-cli
-  2. Postfix
+- **NEAR-CLI**
 
- **Optional**
+- **Postfix**
 
-  1. Grafana Server
+## Installing
 
-  2. Prometheus Server
+* This will download the script and make it execuateble
 
+```
+wget https://raw.githubusercontent.com/solutions-crypto/near-guildnet-tools/main/staking-bot/stakingSeatBot.sh
+chmod +x stakingSeatBot.sh
+sudo cp stakingSeatBot.sh /usr/local/bin/stakingSeatBot.sh
+```
+
+* Install near-cli this is how I do it your procedures may differ. If you already have a working near-cli do not change it
+
+```
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+sudo apt-get install -y nodejs
+node -v
+npm -v
+git clone https://github.com/crypto-guys/guildnet-cli-update
+cd guildnet-cli-update
+sudo npm imstall -g
+near --version
+export NEAR_ENV=guildnet
+near proposals
+```
+**If near-cli is working you should make sure it has access to the appropriate keys and move on to setting up postfix**
 
 - Set Up Postfix [source](https://www.dlford.io/send-email-alerts-from-linux-server/)
 ```
@@ -89,3 +110,31 @@ Restart postfix to apply the configuration.
 ```
 systemctl restart postfix
 ```
+
+#### Usage
+
+Edit the script and input your settings. These are the user configurable settings
+```
+NETWORK="guildnet"
+POOL_ID="pool.stake.guildnet"
+ACCOUNT_ID="account.guildnet"
+NUM_SEATS_TO_OCCUPY=0
+# Set Enable Email to 1 to enable email notifications and fill in the blanks
+ENABLE_EMAIL=0
+FROM_ADDRESS=should be the account that is authorized to send mail via the relay configured above
+TO_ADDRESS=the address to receive notifications
+# Number of missed blocks before an email is sent
+ALERT_MISSING_BLOCKS=10
+# This is added to the total cost of the number of seats to occupy as a buffer zone
+SEAT_PRICE_BUFFER=5000
+```
+
+
+To run every 5 minutes and output to a logfile
+```
+crontab -e
+*/5 * * * * /usr/local/bin/stakingSeatBot.sh >> /full_path_to/stakingBot.log
+```
+
+
+
