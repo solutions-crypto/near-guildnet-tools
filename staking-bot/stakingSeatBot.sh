@@ -21,7 +21,7 @@ FROM_ADDRESS=
 TO_ADDRESS=
 # Number of missed blocks before an email is sent
 ALERT_MISSING_BLOCKS=10
-
+SEAT_PRICE_BUFFER=5000
 
 # Epoch Lengths
 GUILDNET_EPOCH_LEN=5000
