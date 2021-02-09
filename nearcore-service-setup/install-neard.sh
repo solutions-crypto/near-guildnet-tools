@@ -9,6 +9,9 @@ echo "*!! NEAR Install Script Starting !!*"
 echo "** Please enter the name of the network you wish to connect to betanet, guildnet, mainnet, testnet are all valid **"
 read -r NETWORK
 
+echo "** Please your vallidator ID **"
+read -r VALIDATOR_ID
+
 # Get the correct config.json
 GUILDNET_CONFIG_URL="https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/config.json"
 GUILDNET_GENESIS_URL="https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/genesis.json"
@@ -41,6 +44,46 @@ sudo neard --home /home/neard/.near/guildnet init --download-genesis --chain-id 
 sudo wget "$GUILDNET_CONFIG_URL" -O /home/neard/.near/guildnet/config.json
 sudo wget "$GUILDNET_GENESIS_URL" -O /home/neard/.near/guildnet/genesis.json
 sudo chown neard:near -R /home/neard/
+
+echo "* Creating systemd unit file for node_exporter service"
+
+sudo cat > /home/neard/service/node_exporter.service <<EOF
+[Unit]
+Description=Prometheus Node Exporter
+Documentation=https://github.com/prometheus/node_exporter/blob/master/README.md
+Requires=network-online.target
+
+[Service]
+Type=exec
+User=exporter
+ExecStart=/var/lib/near/exporter/node-exporter --web.listen-address=":9100"  
+Restart=on-failure
+RestartSec=45
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "* Creating systemd unit file for node_exporter service"
+
+sudo cat > /home/neard/service/node_exporter.service <<EOF
+[Unit]
+Description=NEAR Prometheus Exporter
+Documentation=https://github.com/masknetgoal634/near-prometheus-exporter
+Requires=network-online.target
+
+[Service]
+Type=simple
+User=exporter
+ExecStart=/var/lib/near/exporter/near-exporter -accountId "$VALIDATOR_ID" -addr ":9333"
+Restart=on-failure
+RestartSec=45
+
+[Install]
+WantedBy=multi-user.target
+
+EOF
+
 
 echo "* Creating systemd unit file for NEAR validator service"
 
