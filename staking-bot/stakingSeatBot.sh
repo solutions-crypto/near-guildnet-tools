@@ -14,7 +14,7 @@ NETWORK="guildnet"
 POOL_ID="pool.stake.guildnet"
 ACCOUNT_ID="account.guildnet"
 # Enter a NUMBER 
-NUM_SEATS_TO_OCCUPY=
+NUM_SEATS_TO_OCCUPY=1
 # Set Enable Email to 1 to enable email notifications and fill in the blanks
 ENABLE_EMAIL=0
 FROM_ADDRESS=
@@ -68,7 +68,7 @@ echo "Starting Script"
 echo "---------------"
 
 # Ensure user has configured the script
-if [ "$POOL_ID" == "???" ]
+if [ "$POOL_ID" == "pool.stake.guildnet" ]
 then
 echo "You have not properly configured this script. Please edit the file and replace every instance of ??? with valid data"
 else
