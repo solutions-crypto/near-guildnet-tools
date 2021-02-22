@@ -22,8 +22,14 @@ systemctl status neard
 
 Logging 
 - Follow the system journal for the -u unit file neard
+```
 sudo journalctl -u neard -f
+```
 - Get all logs for the system
+```
 sudo journalctl -a
+```
 - Get help
+```
 journalctl -h
+```
