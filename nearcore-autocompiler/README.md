@@ -124,4 +124,4 @@ lxc delete compiler -f
 sudo rm -rf /tmp/binaries
 rm -rf /home/$USER/near-guildnet/tools
 ```
-- You can skip the compile process and just use the installer if you already have the binary files the should be stored in /tmp/binaries/. 
+- You can skip the compile process and just use the installer if you already have the binary files the files should be stored in /tmp/binaries/. 
