@@ -12,8 +12,8 @@ After the script has run you will have 3 additional services
 - near_exporter
 - node_exporter
 
-You first need to configure the services 
-- To configure neard
+### You first need to configure the services 
+- To configure **neard**
 
 Uncomment the commented line to append output to a file
 
@@ -24,13 +24,18 @@ If you are specifying advanced networking options you should edit /home/$USER/.n
 sudo nano /home/services/neard.service
 ```
 
-- near_exporter
+- To configure **near_exporter**
 
 This is a modified install of [Near Prometheus Exporter](https://github.com/masknetgoal634/near-prometheus-exporter) where we do not use docker and compile the sources locally to run the service.
 ```
 sudo nano /home/services/near_exporter.service
 ```
-- node_exporter
+This line should have your pool id where it says $VALIDATOR below, and theip address to listen on example 
+```
+ -accountId "testing.stake.guildnet" -addr "8.8.8.8:9333"
+```
+
+- To configure **node_exporter**
 Documentation is located [on the prometheus website](https://prometheus.io/docs/guides/node-exporter/) or [Github](https://github.com/prometheus/node_exporter)
 ```
 sudo nano /home/services/node_exporter.service
