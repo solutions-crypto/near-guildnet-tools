@@ -21,7 +21,7 @@ To see all options available use neard run --help any flag here can be entered o
 
 If you are specifying advanced networking options you should edit /home/$USER/.near/guildnet/config.json
 ```
-sudo nano /home/services/neard.service
+sudo nano /home/neard/services/neard.service
 ```
 
 - To configure **near_exporter**
