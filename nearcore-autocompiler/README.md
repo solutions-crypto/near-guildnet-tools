@@ -31,23 +31,30 @@ The compiler will run in a container and requires estimated 10gb of space tempor
 - Ubuntu Cloud is preferred as it includes cloud-init which is used by LXD/LXC.
 - It has been tested on Ubuntu 21.04 but only inside of an LXC container. It was very stable and worked well but its not for beginners.
 
-##### To Compile Nearcore 1.17.0-rc.5 with default settings simply run this command
+# Instructions
+
+### 1. Download the scripts
+
 ```
-wget https://raw.githubusercontent.com/solutions-crypto/near-guildnet-tools/main/nearcore-autocompile/compiler.sh 
-chmod +x install.sh
-sudo ./install.sh
+cd $HOME
+git clone https://github.com/solutions-crypto/near-guildnet-tools.git
 ```
 
-##### To remove everything except the binary files generated
+### 2. To Compile neard, node exporter, and near exporter with default settings simply run this command
 ```
-wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/main/clean_up.sh
-chmod +x clean_up.sh
-sudo ./clean_up.sh
+sudo /home/$USER/near-guildnet-tools/nearcore-autocompiler/compiler.sh
 ```
-##### Container Management
-- The container is named "compiler"
-- To delete the container "lxc delete compiler -f"
-- The cleanup script deletes the container and uninstalls LXD
+
+### 3. To install the services
+```
+sudo /home/$USER/near-guildnet-tools/nearcore-service-setup/install-neard.sh
+```
+
+##### To start over
+```
+chmod +x /home/$USER/near-guildnet-tools/nearcore-autocompiler/clean_up.sh
+sudo /home/$USER/near-guildnet-tools/nearcore-autocompiler/clean_up.sh
+```
 
 ## Use
 
@@ -97,13 +104,18 @@ If you prefer logs to go to a file uncomment the noted line in the [neard.servic
     - Get help
     ```journalctl --help```
 
-#### Troubleshooting
+## Staking Bot
+- Please see the [README](https://github.com/solutions-crypto/near-guildnet-tools/blob/main/staking-bot/README.md)
 
-- You can skip the compile process and just use the installer if you already have the binary file. 
-
-- To start over use the clean_up.sh script
+## After your finished
+- The container is named "compiler"
+- To delete the container after compiling 
 ```
-wget https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/main/clean_up.sh
-chmod +x clean_up.sh
-sudo ./clean_up.sh
+lxc delete compiler -f
 ```
+- To delete the temp files 
+```
+sudo rm -rf /tmp/binaries
+rm -rf /home/$USER/near-guildnet/tools
+```
+- You can skip the compile process and just use the installer if you already have the binary files the should be stored in /tmp/binaries/. 
