@@ -30,9 +30,9 @@ This is a modified install of [Near Prometheus Exporter](https://github.com/mask
 ```
 sudo nano /home/services/near_exporter.service
 ```
-This line should have your pool id where it says $VALIDATOR below, and theip address to listen on example 
+This line should have your pool id and theip address to listen on. *example* 
 ```
- -accountId "testing.stake.guildnet" -addr "8.8.8.8:9333"
+    ExecStart=/usr/local/bin/near_exporter -accountId "testing.stake.guildnet" -addr "8.8.8.8:9333"
 ```
 
 - To configure **node_exporter**
