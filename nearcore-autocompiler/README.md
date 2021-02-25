@@ -113,15 +113,4 @@ If you prefer logs to go to a file there is a commented line in /home/neard/serv
 ## Staking Bot
 - Please see the [README](https://github.com/solutions-crypto/near-guildnet-tools/blob/main/staking-bot/README.md)
 
-## After your finished
-- The container is named "compiler"
-- To delete the container after compiling 
-```
-lxc delete compiler -f
-```
-- To delete the temp files 
-```
-sudo rm -rf /tmp/binaries
-rm -rf /home/$USER/near-guildnet/tools
-```
 - You can skip the compile process and just use the installer if you already have the binary files the files should be stored in /tmp/binaries/. 
