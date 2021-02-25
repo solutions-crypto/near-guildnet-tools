@@ -1,7 +1,16 @@
 # Tools for the NEAR Guildnet Network
 
-- [Staking Bot](https://github.com/solutions-crypto/near-guildnet-tools/blob/main/staking-bot/README.md)
+- [nearcore Compiler](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/nearcore-autocompiler)
 
-- [nearcore Compiler](https://github.com/solutions-crypto/near-guildnet-tools/blob/main/nearcore-autocompiler/README.md)
+First compile the source code in a container
 
-- [neard Installer](https://github.com/solutions-crypto/near-guildnet-tools/blob/main/nearcore-service-setup/README.md)
+- [neard Installer](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/nearcore-service-setup)
+
+Second install the services
+
+- [Staking Bot](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/staking-bot)
+
+Optionally install the staking bot
+
+
+
