@@ -1,10 +1,12 @@
 # Install
 
-NOTE: You must have at minimum the neard binary file you want to use compiled to run this script. This script will check /tmp/binaries/ for the files it requires. If they are unavailable the script will be unable to complete successfully.
-
 ## Instructions
 
-sudo ./installer.sh
+**NOTE:** You must have at minimum.... the neard binary file in /tmp/binaries/ for the script to function. 
+
+```
+sudo ~/near-guildnet-tools/nearcore-service-setup/install-neard.sh
+```
 
 After the script has run you will have 3 additional services
 
