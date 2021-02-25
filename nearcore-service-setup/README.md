@@ -4,7 +4,7 @@ NOTE: You must have at minimum the neard binary file you want to use compiled to
 
 ## Instructions
 
-./installer.sh
+sudo ./installer.sh
 
 After the script has run you will have 3 additional services
 
@@ -12,7 +12,31 @@ After the script has run you will have 3 additional services
 - near_exporter
 - node_exporter
 
-You need to configure them then you can start them using systemctl 
+You first need to configure the services 
+- To configure neard
+
+Uncomment the commented line to append output to a file
+
+To see all options available use neard run --help any flag here can be entered on the line starting with Exec
+
+If you are specifying advanced networking options you should edit /home/$USER/.near/guildnet/config.json
+```
+sudo nano /home/services/neard.service
+```
+
+- near_exporter
+
+This is a modified install of [Near Prometheus Exporter](https://github.com/masknetgoal634/near-prometheus-exporter) where we do not use docker and compile the sources locally to run the service.
+```
+sudo nano /home/services/near_exporter.service
+```
+- node_exporter
+Documentation is located [on the prometheus website](https://prometheus.io/docs/guides/node-exporter/) or [Github](https://github.com/prometheus/node_exporter)
+```
+sudo nano /home/services/node_exporter.service
+```
+
+then you can start them using systemctl 
 - Examples:  
 ```
 systemctl enable neard 
