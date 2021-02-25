@@ -25,16 +25,15 @@ The compiler will run in a container and requires estimated 10gb of space tempor
 ## Helpful Info
 
 - Using a newly installed system is preferred.
-- User settings are in the USER SETTINGS section at the top of compilers.sh
 - The clean_up.sh script will remove everything the compiler does. This is useful if you run into errors from failed previous attempts. 
-- The script has been tested on using Ubuntu Cloud Images 18.04 bionic and 20.04 focal.
-- Ubuntu Cloud is preferred as it includes cloud-init which is used by LXD/LXC.
+- The script has been tested using **Ubuntu Cloud Images** 18.04 bionic and 20.04 focal.
+- Ubuntu Cloud is preferred/required as it includes cloud-init which is used by LXD/LXC.
 - It has been tested on Ubuntu 21.04 but only inside of an LXC container. It was very stable and worked well but its not for beginners.
+- You will be asked to answer a couple of questions when the scripts start.
 
 # Instructions
 
 ### 1. Download the scripts
-
 ```
 cd $HOME
 git clone https://github.com/solutions-crypto/near-guildnet-tools.git
@@ -82,10 +81,17 @@ sudo /home/$USER/near-guildnet-tools/nearcore-autocompiler/clean_up.sh
 
 To customize how the system journal treats the logged data please see [journald.conf man page](https://manpages.debian.org/testing/systemd/journald.conf.5.en.html)
 
-The file to edit is here. This file includes some notes to help. /usr/lib/systemd/journald.conf.d/neard.conf
+You could do this for example this will give you the default settings which you can edit.
+```
+sudo cp /etc/systemd/journald.conf /etc/systemd/journald.conf.d/neard.conf
+sudo nano /etc/systemd/journald.conf.d/neard.conf
+```
+If you prefer logs to go to a file there is a commented line in /home/neard/service/neard.service remove the # sign. 
 
-If you prefer logs to go to a file uncomment the noted line in the [neard.service](https://raw.githubusercontent.com/solutions-crypto/nearcore-autocompile/neard.service) unit file.
-
+** Please note files that are not rotated will eventually fill the hard drive **
+```
+#StandardOutput=append:/var/log/guildnet.log  
+```
 
 - View logs
 
