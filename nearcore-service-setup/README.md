@@ -2,7 +2,7 @@
 
 ## Instructions
 
-**NOTE:** You must have at minimum.... the neard binary file in /tmp/binaries/ for the script to function. 
+**NOTE:** You must have at minimum.... the neard binary file in /tmp/binaries/ for the script to function. This is the second part of a script if you have not yet run the first part [please look here](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/nearcore-autocompiler)
 
 ```
 sudo ~/near-guildnet-tools/nearcore-service-setup/install-neard.sh
