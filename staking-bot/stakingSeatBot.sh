@@ -10,18 +10,20 @@
 #############################################
 # Only guildnet has been tested
 NETWORK="guildnet"
-# Example "beastake.stake.guildnet" 
+# Example "beastake.stake.guildnet"
 POOL_ID="pool.stake.guildnet"
-ACCOUNT_ID="account.guildnet"
-# Enter a NUMBER 
+ACCOUNT_ID="accounId.guildnet"
+# Enter a NUMBER
 NUM_SEATS_TO_OCCUPY=1
 # Set Enable Email to 1 to enable email notifications and fill in the blanks
 ENABLE_EMAIL=0
-FROM_ADDRESS=
-TO_ADDRESS=
+FROM_ADDRESS=<ENTER THE ACCOUNT AUTHORIZED TO SEND MAIL>
+TO_ADDRESS=notifications@yourdomain.net
 # Number of missed blocks before an email is sent
 ALERT_MISSING_BLOCKS=10
-SEAT_PRICE_BUFFER=5000
+SEAT_PRICE_BUFFER=20000
+# Enable More Verbose Output
+DEBUG_MIN=0
 
 # Epoch Lengths
 GUILDNET_EPOCH_LEN=5000
@@ -29,12 +31,12 @@ BETANET_EPOCH_LEN=10000
 TESTNET_EPOCH_LEN=43200
 MAINET_EPOCH_LEN=43200
 
-# Additional Script Configuration
+# Additional Script Configuration Don't Change
 ADD0=000000000000000000000000
 COMMA=","
 #DOUBLE_QUOTE="\""
 DEBUG_ALL=0
-DEBUG_MIN=0
+CURRENTDIR=$(pwd | tail -n 1)
 
 # Export the network to the environment
 export NEAR_ENV=$NETWORK
@@ -68,27 +70,35 @@ echo "Starting Script"
 echo "---------------"
 
 # Ensure user has configured the script
-if [ "$POOL_ID" == "pool.stake.guildnet" ]
+if [ "$POOL_ID" == "pool.stake.guildnet" ] && [ "$DEBUG_ALL" == "1" ]
 then
 echo "You have not properly configured this script. Please edit the file and replace every instance of ??? with valid data"
-else
+exit
+fi
+
+if [ "$DEBUG_MIN" == "1" ]
+then
 echo "The script is configured"
 fi
 
-PUBLIC_KEY="near view $POOL_ID get_staking_key '{}' | tail -n 1"
-if [ "$DEBUG_ALL" == "1" ]
-then
-echo "The public key retrieved from the network for $POOL_ID is: $PUBLIC_KEY"
-else
-echo "We have the key"
-fi
+PUBLIC_KEY=$(near view "$POOL_ID" get_staking_key {} | tail -n 1)
+#if [ "$DEBUG_ALL" == "1" ]
+#then
+#  echo 'The public key for $POOL_ID is: $PUBLIC_KEY'
+#else
+#if [ "$DEBUG_MIN" == "1" ]
+#then
+#  echo "We have the key"
+#fi
 
 VALIDATORS=$(curl -s -d '{"jsonrpc": "2.0", "method": "validators", "id": "dontcare", "params": [null]}' -H 'Content-Type: application/json' $HOST )
 if [ "$DEBUG_ALL" == "1" ]
 then
   echo "Validators: $VALIDATORS"
-else
-echo "Validator Info Received"
+fi
+if [ "$DEBUG_MIN" == "1" ]
+then
+  echo "Validator Info Received"
 fi
 
 STATUS_VAR="/status"
@@ -246,19 +256,24 @@ fi
 
 PRODUCED_BLOCKS=$(curl -s -d '{"jsonrpc": "2.0", "method": "validators", "id": "dontcare", "params": [null]}' -H 'Content-Type: application/json' "$HOST" | jq -c ".result.current_validators[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .num_produced_blocks)
 EXPECTED_BLOCKS=$(curl -s -d '{"jsonrpc": "2.0", "method": "validators", "id": "dontcare", "params": [null]}' -H 'Content-Type: application/json' "$HOST" | jq -c ".result.current_validators[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .num_expected_blocks)
-BLOCKS_MISSED=$((EXPECTED_BLOCKS-PRODUCED_BLOCKS))
+BLOCKS_MISSED=$((EXPECTED_BLOCKS - PRODUCED_BLOCKS))
 
 function send_email_notify
 {
-    if [ "$ENABLE_EMAIL" = 1 ]
+    PREVIOUS_MISSED=$(cat "$CURRENTDIR"/email_counter.txt)
+    COUNTER=$((BLOCKS_MISSED - PREVIOUS_MISSED))
+    if [ "$ENABLE_EMAIL" = 1 ] && [ "$COUNTER" -gt "$ALERT_MISSING_BLOCKS" ]
     then
     mail -s "NEAR Monitor: '$POOL_ID'" -a From:Admin\<$FROM_ADDRESS\> --return-address=$FROM_ADDRESS $TO_ADDRESS <<< 'Pool is Missing Blocks!!  
     Expected: '$EXPECTED_BLOCKS'
     Produced: '$PRODUCED_BLOCKS'
     Blocks Missed: '$BLOCKS_MISSED'
     Alert Trigger: '$ALERT_MISSING_BLOCKS' Missing Blocks'
-    else
-    echo "email alerts are disabled"
+       echo "$BLOCKS_MISSED" > "$CURRENTDIR"/email_counter.txt
+    fi
+    if [ "$ENABLE_EMAIL" = 0 ] && [ "$DEBUG_ALL" = 1 ]
+    then
+      echo "email alerts are disabled"
     fi
 }
 
@@ -294,13 +309,15 @@ function send_email_kick
     Blocks Missed: '$BLOCKS_MISSED'
     Latest Seat Price: '$SEAT_PRICE_PROPOSALS'
     Validators Stake: '$PROPOSAL_STAKE''
-    else
+    fi
+    if [ "$ENABLE_EMAIL" = 0 ] && [ "$DEBUG_ALL" = 1 ]
+    then
     echo "Email notification are disabled"
     fi
 }
 
 # Validator Kicked Check then notify
-if [[ "$KICK_REASON" && "$DEBUG_MIN" == "1" ]]
+if [ "$KICK_REASON" ] && [ "$DEBUG_MIN" == "1" ]
 then
     echo "Validator Kicked Reason = $KICK_REASON"
     PING_COMMAND=$(near call $POOL_ID ping "{}" --accountId $ACCOUNT_ID)
@@ -309,7 +326,7 @@ then
     send_email_kick
     exit
 fi
-if [[ "$KICK_REASON" && "$DEBUG_MIN" == "0" ]]
+if [ "$KICK_REASON" ] && [ "$DEBUG_MIN" == "0" ]
 then
     echo "$PING_COMMAND"
     send_email_kick
@@ -332,7 +349,7 @@ function unstake
 # Stake is less than the Seat Price
 if [[ "$PROPOSAL_STAKE" -lt "$SEAT_PRICE_PROPOSALS" ]]
 then
-    SEAT_PRICE_DIFF=$((SEAT_PRICE_PROPOSALS - PROPOSAL_STAKE ))
+    SEAT_PRICE_DIFF=$((SEAT_PRICE_PROPOSALS - PROPOSAL_STAKE))
     if [ "$DEBUG_MIN" == "1" ]
     then
       echo "Network Proposal Seat Price = $SEAT_PRICE_PROPOSALS"
@@ -368,6 +385,10 @@ fi
 
 
 # Stake is more than the Seat Price
+STAKED_BALANCE=$(near view stakeu.stake.guildnet get_account_staked_balance '{"account_id": "imstaked.guildnet"}' | tail -n 1)
+STAKED_BALANCE=$(echo $STAKED_BALANCE | sed 's/[^0-9]*//g')
+STAKED_BALANCE=${STAKED_BALANCE%????????????????????????}
+
 if [[ "$PROPOSAL_STAKE" -gt "$SEAT_PRICE_PROPOSALS" ]]
 then
     SEAT_PRICE_DIFF=$((PROPOSAL_STAKE - SEAT_PRICE_PROPOSALS))
@@ -379,15 +400,20 @@ then
     echo "Seat Price Buffer = $SEAT_PRICE_BUFFER"
     echo "Stake Diff: $SEAT_PRICE_DIFF"
     fi
-    
+
     NEW_PROPOSAL_NUMBERS=$(echo $SEAT_PRICE_DIFF | sed 's/[^0-9]*//g')
     if [[ "$NEW_PROPOSAL_NUMBERS" -gt 10000 ]]
     then
       AMOUNT=\"$NEW_PROPOSAL_NUMBERS$ADD0\"
-      echo "Decreasing stake by: ${AMOUNT}"
-      unstake "$AMOUNT"
+      if [[ "$STAKED_BALANCE" -gt "$AMOUNT"]]
+      then
+        echo "Decreasing stake by: ${AMOUNT}"
+        unstake "$AMOUNT"
+      else
+        echo "Amount to unstake ("$AMOUNT") is greater than the staked balance ("$STAKED_BALANCE") doing nothing."
+      fi
     else
-    echo "The seat price difference of: $NEW_PROPOSAL_NUMBERS is not enough to trigger a transaction"
+      echo "The seat price difference of: $NEW_PROPOSAL_NUMBERS is not sufficent to trigger a transaction"
     fi
 fi
 
