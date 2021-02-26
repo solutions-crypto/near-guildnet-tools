@@ -1,14 +1,14 @@
 # Guildnet AutoPile
 
-## Overview and very quick setup
+## Overview and Quick Setup
 
-- First compile the source code in a disposable container using the compiler.sh script
+- First compile the source code in a disposable container using the 'compile' script
 ```
 cd $HOME
 git clone https://github.com/near-guildnet/guildnet-autopile.git && cd guildnet-autopile
 sudo ./compile
 ```
-- Second install the binary files, create a non privilaged account to use, and create the services using the neard-install.sh script
+- Second install the binary files, create a non privilaged account to use, and create the services using the 'install' script
 ```
 sudo ./install
 ```
@@ -19,7 +19,7 @@ sudo rm -rf /tmp/binaries
 sudo rm -rf ~/guildnet-autopile
 ```
 
-## Detailed instructions and Description
+## Detailed Instructions
 
 This script will create a contained environment to safely compile our binary files and then with the clean_up.sh script we destroy the environment when finished with it. 
 
