@@ -11,14 +11,14 @@
 # Only guildnet has been tested
 NETWORK="guildnet"
 # Example "beastake.stake.guildnet"
-POOL_ID="stakeu.stake.guildnet"
-ACCOUNT_ID="imstaked.guildnet"
+POOL_ID="pool.stake.guildnet"
+ACCOUNT_ID="accountId.guildnet"
 # Enter a NUMBER
-NUM_SEATS_TO_OCCUPY=10
+NUM_SEATS_TO_OCCUPY=1
 # Set Enable Email to 1 to enable email notifications and fill in the blanks
-ENABLE_EMAIL=1
-FROM_ADDRESS=admin@crypto-solutions.net
-TO_ADDRESS=notifications@crypto-solutions.net
+ENABLE_EMAIL=0
+FROM_ADDRESS=
+TO_ADDRESS=
 # Number of missed blocks before an email is sent
 ALERT_MISSING_BLOCKS=10
 SEAT_PRICE_BUFFER=20000
@@ -303,7 +303,7 @@ function send_email_kick
 {
     if [ "$ENABLE_EMAIL" = 1 ]
     then
-    mail -s "NEAR Monitor: $POOL_ID" -a From:Admin\<admin@crypto-solutions.net\> --return-address=admin@crypto-solutions.net notifications@crypto-solutions.net <<< 'The validator '$POOL_ID' has been kicked for '$KICK_REASON' 
+    mail -s "NEAR Monitor: $POOL_ID" -a From:Admin\<$FROM_ADDRESS\> --return-address=$FROM_ADDRESS $TO_ADDRESS <<< 'The validator '$POOL_ID' has been kicked for '$KICK_REASON'
     Action Taken:  A new proposal has been submitted.
     Produced: '$PRODUCED_BLOCKS'
     Blocks Missed: '$BLOCKS_MISSED'
@@ -362,7 +362,7 @@ then
     # Check that the accountId has the funds available then increase stake by difference
     if [ $SEAT_PRICE_DIFF -gt 4500 ]
     then
-    UNSTAKED_BALANCE=$(near view stakeu.stake.guildnet get_account_unstaked_balance '{"account_id": '\"$ACCOUNT_ID\"'}' | tail -n 1)
+    UNSTAKED_BALANCE=$(near view $POOL_ID get_account_unstaked_balance '{"account_id": '\"$ACCOUNT_ID\"'}' | tail -n 1)
     UNSTAKED_BALANCE=$(echo $UNSTAKED_BALANCE | sed 's/[^0-9]*//g')
     UNSTAKED_BALANCE=${UNSTAKED_BALANCE%????????????????????????}
     
@@ -385,7 +385,7 @@ fi
 
 
 # Stake is more than the Seat Price
-STAKED_BALANCE=$(near view stakeu.stake.guildnet get_account_staked_balance '{"account_id": "imstaked.guildnet"}' | tail -n 1)
+STAKED_BALANCE=$(near view $POOL_ID get_account_staked_balance '{"account_id": '\"$ACCOUNT_ID\"'}' | tail -n 1)
 STAKED_BALANCE=$(echo $STAKED_BALANCE | sed 's/[^0-9]*//g')
 STAKED_BALANCE=${STAKED_BALANCE%????????????????????????}
 
@@ -401,16 +401,16 @@ then
     echo "Stake Diff: $SEAT_PRICE_DIFF"
     fi
 
-    NEW_PROPOSAL_NUMBERS=$(echo $SEAT_PRICE_DIFF | sed 's/[^0-9]*//g')
-    if [ "$NEW_PROPOSAL_NUMBERS" -gt 10000 ]
+    SEAT_PRICE_DIFF=$(echo $SEAT_PRICE_DIFF | sed 's/[^0-9]*//g')
+    if [ "$SEAT_PRICE_DIFF" -gt 10000 ]
     then
-      AMOUNT=\"$NEW_PROPOSAL_NUMBERS$ADD0\"
-      if [[ "$STAKED_BALANCE$ADD0" -gt "$NEW_PROPOSAL_NUMBERS" ]]
+      AMOUNT=\"$SEAT_PRICE_DIFF$ADD0\"
+      if [[ "$STAKED_BALANCE" -gt "$SEAT_PRICE_DIFF" ]]
       then
         echo "Decreasing stake by: ${AMOUNT}"
         unstake "$AMOUNT"
       else
-        echo "Amount to unstake ("$NEW_PROPOSAL_NUMBERS") is greater than the staked balance ("$STAKED_BALANCE") doing nothing."
+        echo "Amount to unstake ("$SEAT_PRICE_DIFF") is greater than the staked balance ("$STAKED_BALANCE") doing nothing."
       fi
     else
       echo "The seat price difference of: $NEW_PROPOSAL_NUMBERS is not sufficent to trigger a transaction"
