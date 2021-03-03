@@ -14,11 +14,17 @@ fi
 echo "** Please enter the name of the network you wish to connect to betanet, guildnet, mainnet, testnet are all valid **"
 read -r NETWORK
 
+echo "** Would you like to install NEARD ? y/n"
+read -r NEARD
+
 echo "** Please your vallidator ID **"
 read -r VALIDATOR_ID
 
 echo "** Would you like to install exporter services for prometheus? y/n"
 read -r EXPORTERS
+
+echo "** Would you like to install a custom system journal configuration for NEARD ? y/n"
+read -r JOURNAL_CONF
 
 # Get the correct config.json
 GUILDNET_CONFIG_URL="https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/config.json"
@@ -156,9 +162,18 @@ then
 create_exporter_services
 fi
 
+if [ "NEARD" = y ]
+then
 create_neard_service
+fi
+
+if [ "JOURNAL_CONF" = y ]
+then
 create_journald_conf
+fi
+
 copy_files_set_permissions
+
 sudo chown neard:near -R /home/neard/
 
 echo '****   You should restart the machine now due to changes made to the logging system then check your validator key'
