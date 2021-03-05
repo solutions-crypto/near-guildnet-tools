@@ -2,7 +2,7 @@
 
 - Step 1 
 
-Set up a new vps to host the grafana server and prometheus 1vcpu and 1gb - 2gb of ram should be enough
+Set up a new vps (Ubuntu LTS) to host the grafana server and prometheus 1vcpu and 1gb - 2gb of ram should be enough
 
 - Step 2
 
@@ -37,7 +37,7 @@ sudo nano prometheus.yml
 prometheus.yml
 ```
 # my global config
-# This file assumes the monitor node is ip 10.0.0.4 and the near node is on 10.0.0.5 
+# This file assumes the monitor node is localhost and the near node is on 10.0.0.5 
 global:
   scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
   evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
@@ -82,7 +82,6 @@ scrape_configs:
 - Create the prometheus service
 
 ```
-sudo useradd -s /bin/bash -U -r monitor
 sudo nano /etc/prometheus/prometheus.service
 ```
 prometheus.service
