@@ -6,6 +6,10 @@
 
 - **NEAR-CLI**
 
+- **jq**  
+```
+sudo apt install jq
+```
 - **Postfix**
 
 ## Installing
@@ -135,6 +139,4 @@ To run every 5 minutes and output to a logfile
 crontab -e
 */5 * * * * /usr/local/bin/stakingSeatBot.sh >> /full_path_to/stakingBot.log
 ```
-
-
 
