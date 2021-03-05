@@ -59,6 +59,7 @@ rule_files:
 # Here it's Prometheus itself.
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  # This job monitors the prometheus service on localhost
   - job_name: 'prometheus'
 
     # metrics_path defaults to '/metrics'
@@ -72,6 +73,7 @@ scrape_configs:
     static_configs:
     - targets: ['10.0.0.5:9100']
 
+  # This job monitors near-exporter
   - job_name: 'near-exporter'
     static_configs:
     - targets: ['10.0.0.5:9333']
@@ -95,7 +97,7 @@ Type=simple
 Restart=always
 RestartSec=15
 ExecStart=/etc/prometheus/prometheus --config.file="/etc/prometheus/prometheus.yml" --storage.tsdb.retention.size="10GB" --web.listen-address="10.0.0.4:9090"
-ExecStop=/usr/local/bin/prometheus 
+
 
 [Install]
 WantedBy=multi-user.target
@@ -103,16 +105,8 @@ WantedBy=multi-user.target
 
 ```
 sudo systemctl enable prometheus.service
-sudo systemctl start prometheus.service
-sudo nano prometheus.service
-```
-```
-change the user from root to monitor
-```
-```
-sudo chown -R monitor:monitor /etc/prometheus/
+sudo systemctl enable grafana-server 
 sudo systemctl daemon-reload
-sudo systemctl stop prometheus
 sudo systemctl start prometheus
 sudo systemctl start grafana-server
 sudo systemctl status grafana-server
