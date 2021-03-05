@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # This script will manage your validators stake.
-
+PATH="/usr/local/bin:/usr/bin:/bin"
+PATH=$PATH
 
 #############################################
 #                                           #
