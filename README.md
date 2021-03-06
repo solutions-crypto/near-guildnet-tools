@@ -12,7 +12,7 @@ Optionally install the staking bot
 
 - [Staking Bot](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/staking-bot)
 
-Monitoring
+Optionally set up Monitoring
 
 - [Monitor](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/monitor)
 
