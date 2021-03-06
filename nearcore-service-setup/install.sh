@@ -8,7 +8,7 @@
 echo "*!! NEAR Install Script Starting !!*"
 if [ "$USER" != "root" ]
 then
-    echo " You must run the install script using:  sudo ./install-neard.sh "
+    echo " You must run the install script using:  sudo ./install.sh "
     exit
 fi
 echo "** Please enter the name of the network you wish to connect to betanet, guildnet, mainnet, testnet are all valid **"
