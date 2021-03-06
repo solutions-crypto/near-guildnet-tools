@@ -9,8 +9,7 @@ Set up a new vps (Ubuntu LTS) to host the grafana server and prometheus 1vcpu an
 Install Grafana [Source](https://grafana.com/docs/grafana/latest/installation/debian/)
 
 ```
-sudo apt-get install -y apt-transport-https
-sudo apt-get install -y software-properties-common wget
+sudo apt-get install -y apt-transport-https oftware-properties-common wget
 wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
 echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.li
 sudo apt-get update
@@ -142,7 +141,7 @@ Log into grafana using http://MONITOR_IP:3000
 
 ```
 datasource, new, prometheus
-http://localhost:9090/
+http://<MONITOR_IP>:9090/
 save
 ```
 
