@@ -5,7 +5,7 @@
 **NOTE:** You must have at minimum.... the neard binary file in /tmp/binaries/ for the script to function. This is the second part of a script if you have not yet run the first part [please look here](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/nearcore-autocompiler)
 
 ```
-sudo ~/near-guildnet-tools/nearcore-service-setup/install-neard.sh
+sudo ~/near-guildnet-tools/nearcore-service-setup/install.sh
 ```
 
 After the script has run you will have 3 additional services
@@ -17,7 +17,7 @@ After the script has run you will have 3 additional services
 ### You first need to configure the services 
 - To configure **neard**
 
-Uncomment the commented line to append output to a file
+Uncomment the commented line if you prefer to append output to a file
 
 To see all options available use neard run --help any flag here can be entered on the line starting with Exec
 
