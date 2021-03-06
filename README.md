@@ -2,11 +2,11 @@
 
 First compile the source code in a container
 
-- [nearcore Compiler](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/nearcore-autocompiler)
+- [Compiler](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/nearcore-autocompiler)
 
 Second install the services
 
-- [neard Installer](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/nearcore-service-setup)
+- [Installer](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/nearcore-service-setup)
 
 Optionally install the staking bot
 
@@ -14,7 +14,7 @@ Optionally install the staking bot
 
 Monitoring
 
-- [Instructions](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/monitor)
+- [Monitor](https://github.com/solutions-crypto/near-guildnet-tools/tree/main/monitor)
 
 
 
