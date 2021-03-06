@@ -101,7 +101,31 @@ ExecStart=/etc/prometheus/prometheus --config.file="/etc/prometheus/prometheus.y
 [Install]
 WantedBy=multi-user.target
 ```
+Edit grafana.ini change the ip address and update your smtp settings
+```
+sudo nano /etc/grafana/grafana.ini
 
+#################################### SMTP / Emailing ##########################
+[smtp]
+enabled = true
+host = mail.my-domain.net:465
+user = notifications@my-domain.net
+# If the password contains # or ; you have to wrap it with triple quotes. Ex """#password;"""
+password = ********
+;cert_file =
+;key_file =
+;skip_verify = false
+from_address = notifications@my-domain.net
+from_name = Grafana
+# EHLO identity in SMTP dialog (defaults to instance_name)
+;ehlo_identity = dashboard.example.com
+# SMTP startTLS policy (defaults to 'OpportunisticStartTLS')
+;startTLS_policy = NoStartTLS
+
+[emails]
+welcome_email_on_sign_up = true
+;templates_pattern = emails/*.html
+```
 ```
 sudo systemctl enable prometheus.service
 sudo systemctl enable grafana-server 
