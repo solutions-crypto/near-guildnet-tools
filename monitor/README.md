@@ -1,6 +1,6 @@
 # Configure the Monitor
 
-Note: I always configure the monitor's to use the private network of 10.x.x.x and restrict the ports used to only the local network. There is no good reason to expose this informationi to the world.
+Note: I always configure the monitor's to use the private network of 10.x.x.x and restrict the ports used to only the local network. There is no good reason to expose this information to the world.
 
 - Step 1  
 
