@@ -4,11 +4,11 @@ Note: I always configure the monitor's to use the private network of 10.x.x.x an
 
 - Step 1  
 
-Set up a new vps (Ubuntu LTS) to host the grafana server and prometheus 1vcpu and 1gb - 2gb of ram should be enough
+### Set up a new vps (Ubuntu LTS) to host the grafana server and prometheus 1vcpu and 1gb - 2gb of ram should be enough
 
 - Step 2  
 
-Use the script to set up the server. 
+### Use the script to set up the server. 
 ```
 chmod +x monitor.sh
 sudo ./monitor.sh
@@ -16,7 +16,33 @@ sudo ./monitor.sh
 
 - Step 3
 
-Log into grafana using http://MONITOR_IP:3000    
+### Edit grafana.ini change the ip address and update your smtp settings
+```
+sudo nano /etc/grafana/grafana.ini
+#################################### SMTP / Emailing ##########################
+[smtp]
+enabled = true
+host = mail.my-domain.net:465
+user = notifications@my-domain.net
+# If the password contains # or ; you have to wrap it with triple quotes. Ex """#password;"""
+password = ********
+;cert_file =
+;key_file =
+;skip_verify = false
+from_address = notifications@my-domain.net
+from_name = Grafana
+# EHLO identity in SMTP dialog (defaults to instance_name)
+;ehlo_identity = dashboard.example.com
+# SMTP startTLS policy (defaults to 'OpportunisticStartTLS')
+;startTLS_policy = NoStartTLS
+[emails]
+welcome_email_on_sign_up = true
+;templates_pattern = emails/*.html
+```
+
+- Step 4
+
+### Log into grafana using http://MONITOR_IP:3000    
 
 - Add the datasource for prometheus
 
@@ -26,9 +52,9 @@ http://<MONITOR_IP>:9090/
 save
 ```
 
-- Step 4 
+- Step 5 
 
-Add the dashboards
+### Add the dashboards
 
 Node Exporter
 ```
