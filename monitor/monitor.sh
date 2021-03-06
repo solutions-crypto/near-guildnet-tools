@@ -56,18 +56,25 @@ function install_grafana()
     sudo apt-get install -y apt-transport-https oftware-properties-common wget
     wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
     echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.li
-    sudo apt-get update
-    sudo apt-get install grafana
+    sudo apt-get -y update
+    sudo apt-get -y install grafana
 }
 
 function install_prometheus()
 {
+    mkdir -p /tmp/monitor && cd /tmp/monitor
     wget https://github.com/prometheus/prometheus/releases/download/v2.25.0/prometheus-2.25.0.linux-amd64.tar.gz
-    sha256sum prometheus-2.25.0.linux-amd64.tar.gz
-    # STOP. verify the hash matches d163e41c56197425405e836222721ace8def3f120689fe352725fe5e3ba1a69d
-    tar -xf prometheus-2.25.0.linux-amd64.tar.gz
-    cd prometheus-2.25.0.linux-amd64/
-    sudo cp * /home/prometheus/service/
+    HASH_CHECK=$(sha256sum prometheus-2.25.0.linux-amd64.tar.gz)
+    CORRECT="d163e41c56197425405e836222721ace8def3f120689fe352725fe5e3ba1a69d prometheus-2.25.0.linux-amd64.tar.gz"
+    if [ $HASH_CHECK != $CORRECT ]
+    then
+        echo "The download file has the incorrect hash aborting..."
+        exit
+    else
+        tar -xf prometheus-2.25.0.linux-amd64.tar.gz
+        cd prometheus-2.25.0.linux-amd64/
+        sudo cp * /home/prometheus/service/
+    fi
 }
 
 function create_prometheus_yml()
