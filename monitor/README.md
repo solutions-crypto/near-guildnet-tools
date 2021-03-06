@@ -1,5 +1,7 @@
 # Configure the Monitor
 
+Note: I always configure the monitor's to use the private network of 10.x.x.x and restrict the ports used to only the local network.
+
 - Step 1 
 
 Set up a new vps (Ubuntu LTS) to host the grafana server and prometheus 1vcpu and 1gb - 2gb of ram should be enough
