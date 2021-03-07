@@ -15,10 +15,13 @@ sudo ./monitor.sh
 ```
 
 - Step 3
+### Edit /etc/prometheus/prometheus.yml and /etc/systemd/system/prometheus.service and replace the ip addresses with correct values 
 
 ### Edit grafana.ini change the ip address and update your smtp settings
 ```
 sudo nano /etc/grafana/grafana.ini
+http_ip = .....
+
 #################################### SMTP / Emailing ##########################
 [smtp]
 enabled = true
