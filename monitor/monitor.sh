@@ -32,8 +32,8 @@ function create_user_and_group()
 function create_prometheus_service() 
 {
     echo "* Creating systemd unit file for Prometheus service"
-    mkdir -p /home/prometheus/service/
-    cat > /home/prometheus/service/prometheus.service <<EOF
+    mkdir -p /etc/prometheus/
+    cat > /etc/prometheus/prometheus.service <<EOF
     [Unit]
     Description=Prometheus Service
     After=network.target
@@ -42,22 +42,22 @@ function create_prometheus_service()
     User=root
     Type=simple 
     Restart=on-failure
-    ExecStart=/usr/local/bin/prometheus --config.file="/etc/prometheus/prometheus.yml" --storage.tsdb.retention.size="10GB" --web.listen-address="0.0.0.0:9090"
+    ExecStart=/usr/local/bin/prometheus --config.file="/etc/prometheus/prometheus.yml" --web.listen-address="0.0.0.0:9090"
 
     [Install]
     WantedBy=multi-user.target
 EOF
 
-    ln -s /home/prometheus/service/prometheus.service /etc/systemd/system/prometheus.service
+    ln -s /etc/prometheus/prometheus.service /etc/systemd/system/prometheus.service
 }
 
 function install_grafana()
 {
     sudo apt-get install -y apt-transport-https oftware-properties-common wget
     wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
-    echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.li
-    sudo apt-get -y update
-    sudo apt-get -y install grafana
+    echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
+    sudo apt-get update
+    sudo apt-get install grafana
 }
 
 function install_prometheus()
@@ -65,21 +65,21 @@ function install_prometheus()
     mkdir -p /tmp/monitor && cd /tmp/monitor
     wget https://github.com/prometheus/prometheus/releases/download/v2.25.0/prometheus-2.25.0.linux-amd64.tar.gz
     HASH_CHECK=$(sha256sum prometheus-2.25.0.linux-amd64.tar.gz)
-    CORRECT="d163e41c56197425405e836222721ace8def3f120689fe352725fe5e3ba1a69d prometheus-2.25.0.linux-amd64.tar.gz"
-    if [ $HASH_CHECK != $CORRECT ]
+    CORRECT='d163e41c56197425405e836222721ace8def3f120689fe352725fe5e3ba1a69d prometheus-2.25.0.linux-amd64.tar.gz'
+    if [[ $HASH_CHECK != $CORRECT ]]
     then
         echo "The download file has the incorrect hash aborting..."
         exit
     else
         tar -xf prometheus-2.25.0.linux-amd64.tar.gz
         cd prometheus-2.25.0.linux-amd64/
-        sudo cp * /home/prometheus/service/
+        sudo cp prometheus /usr/local/bin/prometheus
     fi
 }
 
 function create_prometheus_yml()
 {
-    cat > /home/prometheus/service/prometheus.yml <<EOF
+    cat > /etc/prometheus/prometheus.yml <<EOF
     # my global config
     # This file assumes the monitor node is localhost and the near node is on 10.0.0.5 
     global:
