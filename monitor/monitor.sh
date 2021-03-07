@@ -36,14 +36,14 @@ function create_prometheus_service()
     cat > /home/prometheus/service/prometheus.service <<EOF
     [Unit]
     Description=Prometheus Service
-    Documentation=https://github.com/prometheus/
-    Requires=network-online.target
+    After=network.target
+
     [Service]
-    Type=exec
-    User=exporter
-    ExecStart=/var/lib/near/exporter/node_exporter --web.listen-address=":9100"  
+    User=root
+    Type=simple 
     Restart=on-failure
-    RestartSec=45
+    ExecStart=/usr/local/bin/prometheus --config.file="/etc/prometheus/prometheus.yml" --storage.tsdb.retention.size="10GB" --web.listen-address="0.0.0.0:9090"
+
     [Install]
     WantedBy=multi-user.target
 EOF
