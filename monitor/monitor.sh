@@ -6,8 +6,11 @@ then
     exit
 fi
 
-echo "Please enter the ip address of your validator"
-read VALIDATOR_IP
+#echo "Please enter the ip address of your validator"
+#read VALIDATOR_IP
+
+#echo "Please enter the monitor IP address"
+#read MONITOR_IP
 
 function create_user_and_group()
 {
@@ -37,13 +40,11 @@ function create_prometheus_service()
     [Unit]
     Description=Prometheus Service
     After=network.target
-
     [Service]
     User=root
     Type=simple 
     Restart=on-failure
     ExecStart=/usr/local/bin/prometheus --config.file="/etc/prometheus/prometheus.yml" --web.listen-address="0.0.0.0:9090"
-
     [Install]
     WantedBy=multi-user.target
 EOF
@@ -53,7 +54,7 @@ EOF
 
 function install_grafana()
 {
-    sudo apt-get install -y apt-transport-https oftware-properties-common wget
+    sudo apt-get install -y apt-transport-https software-properties-common wget
     wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
     echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
     sudo apt-get update
@@ -65,7 +66,9 @@ function install_prometheus()
     mkdir -p /tmp/monitor && cd /tmp/monitor
     wget https://github.com/prometheus/prometheus/releases/download/v2.25.0/prometheus-2.25.0.linux-amd64.tar.gz
     HASH_CHECK=$(sha256sum prometheus-2.25.0.linux-amd64.tar.gz)
-    CORRECT='d163e41c56197425405e836222721ace8def3f120689fe352725fe5e3ba1a69d prometheus-2.25.0.linux-amd64.tar.gz'
+    CORRECT='d163e41c56197425405e836222721ace8def3f120689fe352725fe5e3ba1a69d  prometheus-2.25.0.linux-amd64.tar.gz'
+    echo "HASH: $HASH_CHECK "
+    echo "GOOD: $CORRECT "
     if [[ $HASH_CHECK != $CORRECT ]]
     then
         echo "The download file has the incorrect hash aborting..."
@@ -79,49 +82,11 @@ function install_prometheus()
 
 function create_prometheus_yml()
 {
-    cat > /etc/prometheus/prometheus.yml <<EOF
-    # my global config
-    # This file assumes the monitor node is localhost and the near node is on 10.0.0.5 
-    global:
-    scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
-    evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
-    # scrape_timeout is set to the global default (10s).
-
-    # Alertmanager configuration
-    alerting:
-    alertmanagers:
-    - static_configs:
-        - targets:
-        # - alertmanager:9093
-
-    # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
-    rule_files:
-    # - "first_rules.yml"
-    # - "second_rules.yml"
-
-    # A scrape configuration containing exactly one endpoint to scrape:
-    # Here it's Prometheus itself.
-    scrape_configs:
-    # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
-    # This job monitors the prometheus service on localhost
-    - job_name: 'prometheus'
-
-        # metrics_path defaults to '/metrics'
-        # scheme defaults to 'http'.
-
-        static_configs:
-        - targets: ['localhost:9090']
-
-    # This job is for all node-exporters
-    - job_name: 'node-exporter'
-        static_configs:
-        - targets: [''$VALIDATOR_IP':9100']
-
-    # This job monitors near-exporter
-    - job_name: 'near-exporter'
-        static_configs:
-        - targets: [''$VALIDATOR_IP':9333']
-EOF
+    mkdir -p /etc/prometheus && cd /etc/prometheus
+    rm prometheus.yml
+    wget https://raw.githubusercontent.com/solutions-crypto/near-guildnet-tools/main/monitor/prometheus.yml
+    cd ~/
+    chown -R prometheus:root /etc/prometheus
 }
 
 function enable_services()
@@ -141,3 +106,4 @@ install_grafana
 install_prometheus
 create_prometheus_yml
 enable_services
+echo " You need to update the ip addresses in /etc/prometheus/prometheus.yml and /etc/systemd/system/prometheus.service"
