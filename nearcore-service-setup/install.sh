@@ -46,6 +46,7 @@ user_check=$(cat /etc/passwd | grep neard)
 if [ -z "$user_check" ]
 then
 sudo adduser --system --disabled-login --ingroup near --home /home/neard --disabled-password neard
+sudo adduser --system --disabled-login --ingroup near --home /home/neard --disabled-password exporter
 else 
 echo "The user neard already exists"
 fi
