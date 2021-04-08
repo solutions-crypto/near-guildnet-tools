@@ -27,8 +27,8 @@ echo "** Would you like to install a custom system journal configuration for NEA
 read -r JOURNAL_CONF
 
 # Get the correct config.json
-GUILDNET_CONFIG_URL="https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/config.json"
-GUILDNET_GENESIS_URL="https://s3.us-east-2.amazonaws.com/build.openshards.io/nearcore-deploy/guildnet/genesis.json"
+GUILDNET_CONFIG_URL="https://s3-us-west-1.amazonaws.com/build.nearprotocol.com/nearcore-deploy/mainnet/config.json"
+GUILDNET_GENESIS_URL="https://raw.githubusercontent.com/nearprotocol/nearcore/master/neard/res/mainnet_genesis.json"
 
 
 function create_user_and_group
@@ -55,15 +55,15 @@ fi
 function copy_files_set_permissions()
 {
 # Copy Guildnet Files to a suitable location
-sudo mkdir -p /home/neard/.near/guildnet
+sudo mkdir -p /home/neard/.near/mainnet
 
 
 echo '* Getting the correct files and fixing permissions'
 sudo cp /tmp/binaries/near* /usr/local/bin
 sudo cp /tmp/binaries/node_exporter /usr/local/bin
-sudo neard --home /home/neard/.near/guildnet init --download-genesis --chain-id guildnet --account-id "$VALIDATOR_ID"
-sudo wget "$GUILDNET_CONFIG_URL" -O /home/neard/.near/guildnet/config.json
-sudo wget "$GUILDNET_GENESIS_URL" -O /home/neard/.near/guildnet/genesis.json
+sudo neard --home /home/neard/.near/mainnet init --download-genesis --chain-id mainnet --account-id "$VALIDATOR_ID"
+sudo wget "$GUILDNET_CONFIG_URL" -O /home/neard/.near/mainnet/config.json
+sudo wget "$GUILDNET_GENESIS_URL" -O /home/neard/.near/mainnet/genesis.json
 }
 
 function create_exporter_services() 
@@ -78,7 +78,7 @@ function create_exporter_services()
     [Service]
     Type=exec
     User=exporter
-    ExecStart=/var/lib/near/exporter/node_exporter --web.listen-address=":9100"  
+    ExecStart=/usr/local/bin/node_exporter --web.listen-address=":9100"  
     Restart=on-failure
     RestartSec=45
     [Install]
@@ -96,7 +96,7 @@ EOF
     [Service]
     Type=simple
     User=exporter
-    ExecStart=/usr/local/bin/near_exporter -accountId "$VALIDATOR_ID" -addr ":9333"
+    ExecStart=/usr/local/bin/near-exporter -accountId "$VALIDATOR_ID" -addr ":9333"
     Restart=on-failure
     RestartSec=45
     [Install]
@@ -119,10 +119,10 @@ After=network-online.target
 Type=exec
 User=neard
 Group=near
-ExecStart=/usr/local/bin/neard --home /home/neard/.near/guildnet run
+ExecStart=/usr/local/bin/neard --home /home/neard/.near/mainnet run
 Restart=on-failure
 RestartSec=80
-#StandardOutput=append:/var/log/guildnet.log
+#StandardOutput=append:/var/log/mainnet.log
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -163,10 +163,11 @@ then
 create_exporter_services
 fi
 
-if [ "NEARD" = y ]
-then
+#if [ "NEARD" = y ]
+#then
+#echo 'NEARD create'
 create_neard_service
-fi
+#fi
 
 if [ "JOURNAL_CONF" = y ]
 then
