@@ -1,0 +1,70 @@
+config:
+  user.user-data: |
+    #cloud-config
+    hostname: guildnet1.imstaked.com
+    swap: 
+      filename: /swap
+      size: "auto" 
+      maxsize: 8000000000
+    mounts:
+      - [ /swap swap swap defaults 0 0 ]
+    package_upgrade: true
+    packages:
+      - apt-transport-https
+      - add-apt-key
+      - ca-certificates
+      - gnupg-agent
+      - apt-utils
+      - software-properties-common
+      - curl 
+      - wget
+      - zip
+      - unzip
+      - gzip
+      - tar  
+      - jq
+      - git
+      - whois  
+      - nginx
+      - net-tools
+      - mlocate
+      - nano 
+      - unattended-upgrades
+      - build-essential
+      - snapd
+      - htop
+      - iotop
+      - nload
+      - screen
+      - debian-keyring
+    preserve_sources_list: false
+    disable_suites: [$RELEASE-updates, $RELEASE-backports, $RELEASE]
+    groups:
+      cloud-users: []
+      lxd: []
+    users:
+      - name: rickrods
+        gecos: TechSupport
+        homedir: /home/rickrods
+        passwd: [ ]
+        no_user_group: false
+        primary_group: rickrods
+        sudo: ALL=(ALL) NOPASSWD:ALL
+        groups: [ users, cloud-users, adm, video, plugdev, dip, sys, netdev, lxd ]
+        shell: /bin/bash
+        inactive: false 
+        ssh_authorized_keys:
+          - ssh-rsa 
+        lock_passwd: false
+        uid: 1000
+    manage_resolv_conf: true
+    resolv_conf:
+      nameservers: [ '192.168.1.1' ]
+      searchdomains:
+        - guildnet2.imstaked.com
+      domain: guildnet2.imstaked.com
+      options:
+        rotate: true
+        timeout: 1
+  user.meta-data: |
+    datasource_list: [ NoCloud, Hetzner ]
