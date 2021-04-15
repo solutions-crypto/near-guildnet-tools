@@ -1,3 +1,5 @@
+# EXAMPLES / INSTRUCTIONS
+# https://cloudinit.readthedocs.io/en/latest/topics/examples.html
 config:
   user.user-data: |
     #cloud-config
@@ -68,3 +70,11 @@ config:
         timeout: 1
   user.meta-data: |
     datasource_list: [ NoCloud, Hetzner ]
+  # READ ABOUT ' user.meta-data ' ...
+  # https://cloudinit.readthedocs.io/en/latest/topics/instancedata.htm
+  #user.vendor-data: |
+    # READ ABOUT user.vendor-data...
+    # https://cloudinit.readthedocs.io/en/latest/topics/vendordata.html
+  #user.network-config: |
+    # READ ABOUT user.network-config...
+    # https://cloudinit.readthedocs.io/en/latest/topics/network-config.html
