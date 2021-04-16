@@ -3,7 +3,7 @@
 config:
   user.user-data: |
     #cloud-config
-    hostname: guildnet1.imstaked.com
+    hostname: <YourHostname>
     swap: 
       filename: /swap
       size: "auto" 
@@ -45,18 +45,18 @@ config:
       cloud-users: []
       lxd: []
     users:
-      - name: rickrods
-        gecos: TechSupport
-        homedir: /home/rickrods
-        passwd: [ ]
+      - name: <YourAdminAccount>
+        gecos: YourName
+        homedir: /home/<YourAdminAccount>
+        passwd: [ mkpass -h ]
         no_user_group: false
-        primary_group: rickrods
+        primary_group: <YourAdminAccount>
         sudo: ALL=(ALL) NOPASSWD:ALL
         groups: [ users, cloud-users, adm, video, plugdev, dip, sys, netdev, lxd ]
         shell: /bin/bash
         inactive: false 
         ssh_authorized_keys:
-          - ssh-rsa 
+          - ssh-rsa goes here
         lock_passwd: false
         uid: 1000
     manage_resolv_conf: true
