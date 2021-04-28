@@ -13,7 +13,7 @@ PATH=$PATH
 NETWORK="guildnet"
 # Example "beastake.stake.guildnet"
 POOL_ID="pool.stake.guildnet"
-ACCOUNT_ID="accountId.guildnet"
+ACCOUNT_ID="account.guildnet"
 # Enter a NUMBER
 NUM_SEATS_TO_OCCUPY=1
 # Set Enable Email to 1 to enable email notifications and fill in the blanks
@@ -22,9 +22,9 @@ FROM_ADDRESS=
 TO_ADDRESS=
 # Number of missed blocks before an email is sent
 ALERT_MISSING_BLOCKS=10
-SEAT_PRICE_BUFFER=20000
+SEAT_PRICE_BUFFER=2000
 # Enable More Verbose Output
-DEBUG_MIN=0
+DEBUG_MIN=1
 
 # Epoch Lengths
 GUILDNET_EPOCH_LEN=5000
@@ -73,11 +73,11 @@ echo "---------------"
 # Ensure user has configured the script
 if [ "$POOL_ID" == "pool.stake.guildnet" ] && [ "$DEBUG_ALL" == "1" ]
 then
-echo "You have not properly configured this script. Please edit the file and replace every instance of ??? with valid data"
+echo "You have not properly configured this script. Please edit stakingSeatBot.sh and fill in the required information "
 exit
 fi
 
-if [ "$DEBUG_MIN" == "1" ]
+if [ ! -z "$POOL_ID" ] && [ "$DEBUG_MIN" == "1" ] || [ ! -z "$POOL_ID" ] && [ "$DEBUG_ALL" == "1" ]
 then
 echo "The script is configured"
 fi
@@ -87,10 +87,10 @@ PUBLIC_KEY=$(near view "$POOL_ID" get_staking_key {} | tail -n 1)
 #then
 #  echo 'The public key for $POOL_ID is: $PUBLIC_KEY'
 #else
-#if [ "$DEBUG_MIN" == "1" ]
-#then
-#  echo "We have the key"
-#fi
+if [ ! -z "$PUBLIC_KEY" ] && [ "$DEBUG_MIN" == "1" ] 
+then
+  echo "We have the key"
+fi
 
 VALIDATORS=$(curl -s -d '{"jsonrpc": "2.0", "method": "validators", "id": "dontcare", "params": [null]}' -H 'Content-Type: application/json' $HOST )
 if [ "$DEBUG_ALL" == "1" ]
@@ -298,6 +298,36 @@ fi
 #send_email_notify
 #fi
 
+
+
+function get_available_stake {
+
+    AVAILABLE_BALANCE=$(near view $POOL_ID get_account_unstaked_balance '{"account_id": '\"$ACCOUNT_ID\"'}' | tail -n 1)
+    AVAILABLE_BALANCE=$(echo $STAKED_BALANCE | sed 's/[^0-9]*//g')
+    AVAILABLE_BALANCE=${STAKED_BALANCE%????????????????????????}
+    echo $AVAILABLE_BALANCE
+}
+
+function stake
+{
+  near call $POOL_ID stake '{"amount": '"$1"'}' --accountId $ACCOUNT_ID
+}
+
+function unstake
+{
+  near call $POOL_ID unstake '{"amount": '"$1"'}' --accountId $ACCOUNT_ID
+}
+
+function stake_all
+{
+  near call $POOL_ID stake_all --accountId $ACCOUNT_ID
+}
+
+function unstake_all
+{
+  near call $POOL_ID stake_all --accountId $ACCOUNT_ID
+}
+
 KICK_REASON=$(echo "$VALIDATORS" | jq -c ".result.prev_epoch_kickout[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .reason)
 KICKED_EMAIL=$(echo "<strong> The validator $POOL_ID has been kicked for $KICK_REASON <strong><br>Action Taken:  A new proposal has been submitted.<br>Produced: $PRODUCED_BLOCKS<br>Blocks Missed: $BLOCKS_MISSED<br>Latest Seat Price: $SEAT_PRICE_PROPOSALS<br>Validators Stake: $PROPOSAL_STAKE")
 function send_email_kick
@@ -323,31 +353,15 @@ then
     echo "Validator Kicked Reason = $KICK_REASON"
     PING_COMMAND=$(near call $POOL_ID ping "{}" --accountId $ACCOUNT_ID)
     echo "$PING_COMMAND"
+    
     echo "$KICKED_EMAIL"
     send_email_kick
-    exit
 fi
 if [ "$KICK_REASON" ] && [ "$DEBUG_MIN" == "0" ]
 then
     echo "$PING_COMMAND"
     send_email_kick
-    exit
-fi
-
-
-
-function stake
-{
-  near call $POOL_ID stake '{"amount": '"$1"'}' --accountId $ACCOUNT_ID
-}
-
-function unstake
-{
-  near call $POOL_ID unstake '{"amount": '"$1"'}' --accountId $ACCOUNT_ID
-}
-
-
-# Stake is less than the Seat Price
+ fi 
 if [[ "$PROPOSAL_STAKE" -lt "$SEAT_PRICE_PROPOSALS" ]]
 then
     SEAT_PRICE_DIFF=$((SEAT_PRICE_PROPOSALS - PROPOSAL_STAKE))
@@ -361,18 +375,19 @@ then
     
     # If the difference between $SEAT_PRICE_PROPOSALS + $SEAT_PRICE_BUFFER and $PROPOSAL_STAKE is greater than 4500 
     # Check that the accountId has the funds available then increase stake by difference
-    if [ $SEAT_PRICE_DIFF -gt 4500 ]
+    if [ $SEAT_PRICE_DIFF -gt 1000 ]
     then
-    UNSTAKED_BALANCE=$(near view $POOL_ID get_account_unstaked_balance '{"account_id": '\"$ACCOUNT_ID\"'}' | tail -n 1)
-    UNSTAKED_BALANCE=$(echo $UNSTAKED_BALANCE | sed 's/[^0-9]*//g')
-    UNSTAKED_BALANCE=${UNSTAKED_BALANCE%????????????????????????}
-    
+    UNSTAKED_BALANCE=get_available_stake
+    echo $UNSTAKED_BALANCE is the 
     # Ensure funds are a available for the staking transaction
+
       if [[ "$UNSTAKED_BALANCE" -lt "$SEAT_PRICE_DIFF" ]]
       then
-      STAKE_SHORTFALL=$((SEAT_PRICE_DIFF - UNSTAKED_BALANCE))
-      echo "The current account $ACCOUNT_ID is $STAKE_SHORTFALL NEAR short of the Unstaked Balance needed for the scheduled transaction"
-      echo "Please try to reduce your requested number of seats or increase the available Unstaked Balance for $ACCOUNT_ID"
+        STAKE_SHORTFALL=$((SEAT_PRICE_DIFF - UNSTAKED_BALANCE))
+        echo "The current account $ACCOUNT_ID is $STAKE_SHORTFALL NEAR short of the Unstaked Balance needed for the scheduled transaction staking all tokens"
+        stake_all
+      echo "The account '$ACCOUNT_ID' needs an additional '$STAKE_SHORTFALL'NEAR to complete the original stake request. All available funds have been staked"
+      echo "To see all delegates in the pool use near view $POOL_ID get_accounts '{"from_index": 0, "limit": 10}' "
       exit
       fi
     # Get the difference and send the staking transaction
@@ -403,7 +418,7 @@ then
     fi
 
     SEAT_PRICE_DIFF=$(echo $SEAT_PRICE_DIFF | sed 's/[^0-9]*//g')
-    if [ "$SEAT_PRICE_DIFF" -gt 10000 ]
+    if [ "$SEAT_PRICE_DIFF" -gt 1000 ]
     then
       AMOUNT=\"$SEAT_PRICE_DIFF$ADD0\"
       if [[ "$STAKED_BALANCE" -gt "$SEAT_PRICE_DIFF" ]]
@@ -411,7 +426,8 @@ then
         echo "Decreasing stake by: ${AMOUNT}"
         unstake "$AMOUNT"
       else
-        echo "Amount to unstake ("$SEAT_PRICE_DIFF") is greater than the staked balance ("$STAKED_BALANCE") doing nothing."
+        echo "Amount to unstake ("$SEAT_PRICE_DIFF") is greater than the staked balance ("$STAKED_BALANCE") doing unstaking all tokens."
+        unstake_all
       fi
     else
       echo "The seat price difference of: $NEW_PROPOSAL_NUMBERS is not sufficent to trigger a transaction"
