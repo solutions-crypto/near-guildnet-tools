@@ -151,20 +151,20 @@ case $NETWORK in
     ;;
 esac
 
-
-
 if [ "$DEBUG_MIN" == "1" ]
 then
+BLOCKS_REMAINING=$(echo $BLOCKS_REMAINING | sed 's/[^0-9]*//g')
+EPOCH_MINS_REMAINING=$(echo $EPOCH_MINS_REMAINING | sed 's/[^0-9]*//g')
 echo "Blocks Completed: $BLOCKS_COMPLETED"
 echo "Blocks Remaining: $BLOCKS_REMAINING"
 echo "Epoch Minutes Remaining: $EPOCH_MINS_REMAINING"
 fi
 
-CURRENT_STAKE_S=$(echo "$VALIDATORS" | jq -c ".result.current_validators[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .stake)
+CURRENT_STAKE_S=$(echo "$VALIDATORS" | jq -c ".result.current_proposals[] | select(.account_id | contains (\"$POOL_ID\"))" | jq .stake)
 CURRENT_STAKE_L=(${CURRENT_STAKE_S//\"/})
 CURRENT_STAKE="${CURRENT_STAKE_L%????????????????????????}"
 
-if [[ "$DEBUG_MIN" == "1" && -z "$CURRENT_STAKE_S" ]]
+if [ "$DEBUG_MIN" == "1" ] && [ -z "$CURRENT_STAKE_S" ]
 then
   echo "$POOL_ID is not listed in the proposals for the current epoch"
 fi
@@ -280,23 +280,10 @@ function send_email_notify
 
 
 # Check for missing blocks and email if over the limit
-
-#if [ $BLOCKS_MISSED = 0 ]
-#then
-#send_email_notify
-#fi
-if [ "$BLOCKS_MISSED" -gt "$ALERT_MISSING_BLOCKS" ]
+if [ "$BLOCKS_MISSED" -gt "$ALERT_MISSING_BLOCKS" ] && [ "$ENABLE_EMAIL" = 1]
 then
-send_email_notify
+  send_email_notify
 fi
-#if [ "$BLOCKS_MISSED" -lt "$ALERT_MISSING_BLOCKS" ]
-#then
-#send_email_notify 
-#fi
-#if [ "$BLOCKS_MISSED" = "$ALERT_MISSING_BLOCKS" ]
-#then
-#send_email_notify
-#fi
 
 
 
@@ -334,16 +321,18 @@ function send_email_kick
 {
     if [ "$ENABLE_EMAIL" = 1 ]
     then
-    mail -s "NEAR Monitor: $POOL_ID" -a From:Admin\<$FROM_ADDRESS\> --return-address=$FROM_ADDRESS $TO_ADDRESS <<< 'The validator '$POOL_ID' has been kicked for '$KICK_REASON'
-    Action Taken:  A new proposal has been submitted.
-    Produced: '$PRODUCED_BLOCKS'
-    Blocks Missed: '$BLOCKS_MISSED'
-    Latest Seat Price: '$SEAT_PRICE_PROPOSALS'
-    Validators Stake: '$PROPOSAL_STAKE''
+      echo "Sending an email to nofigy the admin of kickout"
+      sleep 3
+      mail -s "NEAR Monitor: $POOL_ID" -a From:Admin\<$FROM_ADDRESS\> --return-address=$FROM_ADDRESS $TO_ADDRESS <<< 'The validator '$POOL_ID' has been kicked for '$KICK_REASON'
+      Action Taken:  A new proposal has been submitted.
+      Produced: '$PRODUCED_BLOCKS'
+      Blocks Missed: '$BLOCKS_MISSED'
+      Latest Seat Price: '$SEAT_PRICE_PROPOSALS'
+      Validators Stake: '$PROPOSAL_STAKE''
     fi
     if [ "$ENABLE_EMAIL" = 0 ] && [ "$DEBUG_ALL" = 1 ]
     then
-    echo "Email notification are disabled"
+        echo "Validator Kicked: Email notification are disabled"
     fi
 }
 
@@ -351,6 +340,7 @@ function send_email_kick
 if [ "$KICK_REASON" ] && [ "$DEBUG_MIN" == "1" ]
 then
     echo "Validator Kicked Reason = $KICK_REASON"
+    echo "Checking for a current proposal"
     PING_COMMAND=$(near call $POOL_ID ping "{}" --accountId $ACCOUNT_ID)
     echo "$PING_COMMAND"
     
