@@ -434,17 +434,17 @@ echo "The proposal stake and seat price are equal no action will be taken"
 fi
 
 function reduce_seat_prices {
-  
+# NOT FINISHED YET  
 if [ "$SEAT_PRICE_PROPOSALS" -gt "$SOFT_STAKE_LIMIT" ]
 then
-    echo "Every epoch all validators running this script will unstake by 1000 tokens as long as the current seat price is over 350k. "
-    echo "This will only work if the majority of nodes unstake 1000 tokens every epoch until the price is at a level that is desired"
+    echo "Every epoch unstake by 3000 tokens per seat held as long as the current seat price is over the soft limit."
     last_unstake=$(cat ./start_height.txt)
     if [ $last_unstake = $EPOCH_START ]
     then
         echo "We have already reduced stake this epoch will check again next epoch"
     else
-        unstake 1000
+        AMOUNT=(($NUM_SEATS_TO_OCCUPY
+        unstake 3000
         echo $EPOCH_START > ./start_height.txt
     fi
 fi
