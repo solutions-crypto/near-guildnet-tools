@@ -443,8 +443,8 @@ then
     then
         echo "We have already reduced stake this epoch will check again next epoch"
     else
-        AMOUNT=(($NUM_SEATS_TO_OCCUPY
-        unstake 3000
+        AMOUNT='"$NUM_SEATS_TO_OCCUPY"000'
+        unstake $AMOUNT
         echo $EPOCH_START > ./start_height.txt
     fi
 fi
