@@ -68,6 +68,8 @@ esac
 
 
 echo "Starting Script"
+date=$(date --rfc-email)
+echo TIMESTAMP: $date
 echo "---------------"
 
 # Ensure user has configured the script
