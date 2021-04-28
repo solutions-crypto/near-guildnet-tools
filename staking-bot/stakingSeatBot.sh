@@ -25,6 +25,7 @@ ALERT_MISSING_BLOCKS=10
 SEAT_PRICE_BUFFER=2000
 # Enable More Verbose Output
 DEBUG_MIN=1
+SOFT_STAKE_LIMIT=300000
 
 # Epoch Lengths
 GUILDNET_EPOCH_LEN=5000
@@ -432,6 +433,22 @@ then
 echo "The proposal stake and seat price are equal no action will be taken"
 fi
 
+function reduce_seat_prices {
+  
+if [ "$SEAT_PRICE_PROPOSALS" -gt "$SOFT_STAKE_LIMIT" ]
+then
+    echo "Every epoch all validators running this script will unstake by 1000 tokens as long as the current seat price is over 350k. "
+    echo "This will only work if the majority of nodes unstake 1000 tokens every epoch until the price is at a level that is desired"
+    last_unstake=$(cat ./start_height.txt)
+    if [ $last_unstake = $EPOCH_START ]
+    then
+        echo "We have already reduced stake this epoch will check again next epoch"
+    else
+        unstake 1000
+        echo $EPOCH_START > ./start_height.txt
+    fi
+fi
+}
 # Finished
 echo "Script Done"
 echo "----------- "
